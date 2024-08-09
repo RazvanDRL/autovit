@@ -1,41 +1,37 @@
-import Image from 'next/image'
-import singletonRouter from 'next/router';
-import TypesenseInstantsearchAdapter, { SearchClient } from 'typesense-instantsearch-adapter'
-import {
-  DynamicWidgets,
-  InstantSearch,
-  Hits,
-  Highlight,
-  RefinementList,
-  SearchBox,
-  InstantSearchServerState,
-  InstantSearchSSRProvider,
-  getServerState,
-} from 'react-instantsearch';
-import { createInstantSearchRouterNext } from 'react-instantsearch-router-nextjs';
+"use client";
+import { Configure, Hits, InfiniteHits, InstantSearch, SearchBox } from 'react-instantsearch';
+import { typesenseInstantsearchAdapter } from '@/lib/typesense';
+import { _Book } from '@/types/schema';
 
-const typesenseInstantSearchAdapter: SearchClient = new TypesenseInstantsearchAdapter({
-  server: {
-    apiKey: 'xyz',
-    nodes: [
-      {
-        host: 'localhost',
-        port: 8108,
-        protocol: 'http'
-      }
-    ]
-  },
-  additionalSearchParameters: {
-    query_by: 'title,authors',
-    query_by_weights: '4,1'
-  }
-})
+export const Hit = ({ hit }: { hit: _Book }) => {
+  return (
+    <div className='p-2'>
+      <h2>{hit.title}</h2>
+      <p>{hit.authors}</p>
+      <p>{hit.publication_year}</p>
+    </div>
+  );
+}
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <InstantSearch indexName="books" searchClient={typesenseInstantSearchAdapter.searchClient}>
+    <div>
+      <InstantSearch
+        indexName='books'
+        searchClient={typesenseInstantsearchAdapter.searchClient}
+        future={{ preserveSharedStateOnUnmount: true }}
+      >
+        <div className='flex'>
+          <aside className='w-1/3 bg-gray-600 h-screen'>
+
+          </aside>
+          <main className='py-8'>
+            <SearchBox />
+            <Hits hitComponent={Hit}/>
+          </main>
+        </div>
       </InstantSearch>
-    </main>
-  )
+    </div>
+  );
 }
+

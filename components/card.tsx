@@ -25,7 +25,7 @@ function formatNumberWithSpace(number: number) {
 
 export default function Card({ title, price, engineSize, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
-        <div className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px]", className)}>
+        <a href="/anunt" className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image
@@ -33,9 +33,11 @@ export default function Card({ title, price, engineSize, power, description, km,
                         alt="Placeholder"
                         fill
                         className="rounded-sm object-cover"
+                        priority
+                        quality={20}
                     />
                 </div>
-                <div className="flex-1 pl-4"> {/* Added padding-left for spacing */}
+                <div className="flex-1 pl-4">
                     <div className="flex justify-between">
                         <div className="">
                             <h3 className="text-primary font-[600] text-base">
@@ -48,7 +50,7 @@ export default function Card({ title, price, engineSize, power, description, km,
                                 <span className="pl-1">&nbsp;-&nbsp;&nbsp;</span>
                                 {description}
                             </span>
-                            <div className="flex my-4">
+                            <div className="flex my-2">
                                 <div className="flex items-center mr-6">
                                     <Gauge size={16} className="text-[#7F7F7F] mr-2" />
                                     <span className="text-black/80 text-sm"> {formatNumberWithSpace(km)} km</span>
@@ -77,10 +79,9 @@ export default function Card({ title, price, engineSize, power, description, km,
                             {formatNumberWithSpace(price)}
                             <span className="pl-[4px] text-[12px]">EUR</span>
                         </span>
-                        {/* <Heart size={20} className="text-primary cursor-pointer mt-2" /> */}
                     </div>
                 </div>
             </div>
-        </div>
+        </a>
     );
 }

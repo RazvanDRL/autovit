@@ -5,7 +5,7 @@ export default function Page({ params }: { params: { brand: string } }) {
     return (
         <div>
             My Post: {params.brand}
-            <div className="container mx-auto grid grid-rows-10 gap-12">
+            <div className="container mx-auto grid grid-rows-10 gap-3">
                 <Card
                     className="row-span-1"
                     title="Porsche Cayenne"
@@ -15,9 +15,10 @@ export default function Page({ params }: { params: { brand: string } }) {
                     km={251000}
                     fuelType="Petrol"
                     year={2007}
-                    location="Iasi (Iasi)" 
+                    location="Iasi (Iasi)"
                     description="Porsche cayenne stare impecabila"
-                    date="Ieri" />
+                    date="Reactualizat acum 2 zile"
+                />
             </div>
         </div>
     )

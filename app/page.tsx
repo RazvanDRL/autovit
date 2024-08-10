@@ -19,18 +19,39 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+// Sample data with ad counts
 const carBrands = [
-  { value: "bmw", label: "BMW" },
-  { value: "mercedes", label: "Mercedes" },
-  { value: "audi", label: "Audi" },
-  { value: "toyota", label: "Toyota" },
+  { value: "bmw", label: "BMW", ads: 500 },
+  { value: "bercedes", label: "Mercedes", ads: 300 },
+  { value: "audi", label: "Audi", ads: 200 },
+  { value: "toyota", label: "Toyota", ads: 100 },
 ];
 
-const carModels: { [key: string]: string[] } = {
-  bmw: ["3 Series", "5 Series", "X5", "i3"],
-  mercedes: ["C-Class", "E-Class", "S-Class", "GLE"],
-  audi: ["A4", "A6", "Q5", "e-tron"],
-  toyota: ["Corolla", "Camry", "RAV4", "Prius"],
+const carModels: { [key: string]: { name: string, ads: number }[] } = {
+  bmw: [
+    { name: "3 Series", ads: 200 },
+    { name: "5 Series", ads: 150 },
+    { name: "X5", ads: 100 },
+    { name: "i3", ads: 50 },
+  ],
+  mercedes: [
+    { name: "C-Class", ads: 100 },
+    { name: "E-Class", ads: 80 },
+    { name: "S-Class", ads: 70 },
+    { name: "GLE", ads: 50 },
+  ],
+  audi: [
+    { name: "A4", ads: 80 },
+    { name: "A6", ads: 70 },
+    { name: "Q5", ads: 30 },
+    { name: "e-tron", ads: 20 },
+  ],
+  toyota: [
+    { name: "Corolla", ads: 50 },
+    { name: "Camry", ads: 30 },
+    { name: "RAV4", ads: 15 },
+    { name: "Prius", ads: 5 },
+  ],
 };
 
 const years = Array.from({ length: 50 }, (_, i) => ({ value: (new Date().getFullYear() - i).toString(), label: (new Date().getFullYear() - i).toString() }));
@@ -54,12 +75,13 @@ const transmissions = [
   { value: "Semi-automatic", label: "Semi-automatic" },
 ];
 
-const DropdownSelect = ({ options, placeholder, value, onChange, className }: {
-  options: { value: string; label: string }[];
+const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
+  options: { value: string; label: string; ads?: number }[];
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
   className: string;
+  disabled?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
@@ -80,6 +102,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className }: {
           role="combobox"
           aria-expanded={open}
           className={cn("w-full text-md justify-between bg-[#EBECEF] border-[#EBECEF] rounded-sm font-[400]", className)}
+          disabled={disabled}
         >
           {value || placeholder}
           <ChevronDown className="ml-2 h-8 w-8 shrink-0" />
@@ -106,7 +129,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className }: {
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label}
+                  {option.label} {option.ads !== undefined && `(${option.ads})`}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -124,6 +147,26 @@ export default function Home() {
   const [color, setColor] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
+  const [totalAds, setTotalAds] = useState(0);
+
+  useEffect(() => {
+    // Calculate the total ads from all brands when the component mounts
+    const initialTotalAds = carBrands.reduce((sum, brand) => sum + brand.ads, 0);
+
+    // Update the totalAds count based on the selected brand and model
+    const selectedBrand = carBrands.find((b) => b.value === brand);
+    const selectedModel = carModels[brand]?.find((m) => m.name === model);
+
+    let adsCount = initialTotalAds;
+    if (selectedBrand) {
+      adsCount = selectedBrand.ads;
+      if (selectedModel) {
+        adsCount = selectedModel.ads;
+      }
+    }
+
+    setTotalAds(adsCount);
+  }, [brand, model]);
 
   return (
     <div>
@@ -142,10 +185,11 @@ export default function Home() {
             </div>
             <div className="col-span-2">
               <DropdownSelect
-                options={brand ? carModels[brand].map(model => ({ value: model, label: model })) : []}
+                options={brand ? carModels[brand].map((model) => ({ value: model.name, label: model.name, ads: model.ads })) : []}
                 placeholder="Model"
                 value={model}
                 onChange={setModel}
+                disabled={!brand}
                 className="p-6"
               />
             </div>
@@ -187,11 +231,10 @@ export default function Home() {
             </div>
           </div>
           <div className="flex justify-end mt-8 w-full">
-              <Button type="submit" className="w-1/2 bg-[#C82814] font-semibold py-6 text-base">
-                Caută 33 213 anunțuri
-              </Button>
+            <Button type="submit" className="w-1/2 bg-[#C82814] font-semibold py-6 text-base">
+              Caută {totalAds} anunțuri
+            </Button>
           </div>
-
         </form>
       </main>
     </div>

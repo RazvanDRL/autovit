@@ -3,6 +3,7 @@ import { Calendar, Fuel, Gauge, Heart, User } from "lucide-react";
 import Image from "next/image";
 
 interface CardProps {
+    id: string;
     title: string;
     price: number;
     engineSize: number;
@@ -23,13 +24,13 @@ function formatNumberWithSpace(number: number) {
     }).format(number).replace(/,/g, ' ');
 }
 
-export default function Card({ title, price, engineSize, power, description, km, fuelType, year, location, date, className }: CardProps) {
+export default function Card({ id, title, price, engineSize, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
-        <a href="/anunt" className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
+        <a href={`/anunt/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image
-                        src="/image.webp"
+                        src={`https://pub-6d5910db9c3d49d386074d553c5f4af0.r2.dev/${id}.webp`}
                         alt="Placeholder"
                         fill
                         className="rounded-sm object-cover"

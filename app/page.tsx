@@ -19,6 +19,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+import { Configure, Hits, InfiniteHits, InstantSearch, SearchBox } from 'react-instantsearch';
+import { typesenseInstantsearchAdapter } from '@/lib/typesense';
+import { _Book } from '@/types/schema';
+
 // Sample data with ad counts
 const carBrands = [
   { value: "bmw", label: "BMW", ads: 500 },
@@ -74,6 +78,16 @@ const transmissions = [
   { value: "Manual", label: "Manual" },
   { value: "Semi-automatic", label: "Semi-automatic" },
 ];
+
+const Hit = ({ hit }: { hit: _Book }) => {
+  return (
+    <div className='p-2'>
+      <h2>{hit.title}</h2>
+      <p>{hit.authors}</p>
+      <p>{hit.publication_year}</p>
+    </div>
+  );
+}
 
 const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
   options: { value: string; label: string; ads?: number }[];
@@ -172,6 +186,18 @@ export default function Home() {
     <div>
       <Navbar />
       <main className="lg:max-w-6xl mx-auto">
+        {/* <InstantSearch
+          indexName='books'
+          searchClient={typesenseInstantsearchAdapter.searchClient}
+          future={{ preserveSharedStateOnUnmount: true }}
+        >
+          <div className='flex'>
+            <main className='py-8'>
+              <SearchBox />
+              <Hits hitComponent={Hit} />
+            </main>
+          </div>
+        </InstantSearch> */}
         <form className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="col-span-2">

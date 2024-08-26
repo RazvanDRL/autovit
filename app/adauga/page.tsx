@@ -1,4 +1,5 @@
 "use client";
+// eautoaz
 import React, { useState, useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +7,7 @@ import * as z from 'zod';
 
 import { toast } from 'sonner';
 
-import { Check, ChevronDown, ChevronsUpDown } from "lucide-react"
+import { Check, ChevronDown, ChevronsUpDown, Loader2, Plus, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -132,6 +133,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
 };
 
 export default function CarAdForm() {
+    const [isUploading, setIsUploading] = useState(false);
     const [selectedBrand, setSelectedBrand] = useState("");
     const [selectedModel, setSelectedModel] = useState("");
     const [selectedYear, setSelectedYear] = useState("");
@@ -143,8 +145,18 @@ export default function CarAdForm() {
     const [selectedFuelType, setSelectedFuelType] = useState("");
     const [selectedLocation, setSelectedLocation] = useState("");
     const [selectedDoors, setSelectedDoors] = useState<"2/3" | "4/5" | "6/7" | "">("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedTitle, setSelectedTitle] = useState("");
+    const [selectedDescription, setSelectedDescription] = useState("");
+    const [selectedShortDescription, setSelectedShortDescription] = useState("");
+    const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+    const [selectedPhotosUrls, setSelectedPhotosUrls] = useState<string[]>([]);
+    const [selectedPrice, setSelectedPrice] = useState("");
+    const [selectedVin, setSelectedVin] = useState("");
 
-    const form = useForm({
+    console.log(selectedPhotos);
+
+    const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             vin: '',
@@ -175,9 +187,9 @@ export default function CarAdForm() {
 
     return (
         <div className="min-h-screen bg-white p-8">
-            <div className="max-w-4xl mx-auto bg-white p-8 rounded-sm">
-                <h1 className='text-[32px]'>
-                    Direct-Sale: successfully sell within 24 hours
+            <div className="max-w-4xl mx-auto bg-white   rounded-sm">
+                <h1 className='text-[32px] font-bold'>
+                    Adauga un anunt nou
                 </h1>
 
                 {/* Brand */}
@@ -340,35 +352,182 @@ export default function CarAdForm() {
                     </div>
                 </div>
 
-                {/* Power */}
-                <div className='mt-8'>
-                    <Label className='block text-sm font-semibold text-gray-600'>Putere</Label>
-                    <div className='flex items-center'>
-                        <div className='relative w-1/3'>
-                            <InputCustom
-                                id="power"
-                                type="number"
-                                placeholder="0"
-                                className="p-6 pr-11"
-                                onBlur={(e) => {
-                                    setSelectedPower(e.target.value);
-                                    form.setValue("power", parseInt(e.target.value, 10));
-                                    console.log(e.target.value);
-                                }}
-                            />
+                <div className='flex justify-between w-2/3'>
+                    {/* Power */}
+                    <div className='mt-8'>
+                        <Label className='block text-sm font-semibold text-gray-600'>Putere</Label>
+                        <div className='flex items-center'>
+                            <div className='relative'>
+                                <InputCustom
+                                    id="power"
+                                    type="number"
+                                    placeholder="0"
+                                    className="p-6 pr-20 w-full"
+                                    onBlur={(e) => {
+                                        setSelectedPower(e.target.value);
+                                        form.setValue("power", parseInt(e.target.value, 10));
+                                        console.log(e.target.value);
+                                    }}
+                                />
+                                <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">CP</span>
+                            </div>
+                            <Check className={cn("ml-3 h-6 w-6 text-green-500", Number(selectedPower) > 0 ? "block" : "hidden")} />
                         </div>
-                        <select className='ml-2 p-3 bg-[#EBECEF] rounded-sm'>
-                            <option>CP</option>
-                            <option>kW</option>
-                        </select>
-                        <Check className={cn("ml-3 h-6 w-6 text-green-500", Number(selectedPower) > 0 ? "block" : "hidden")} />
+                    </div>
+
+                    {/* Engine Size */}
+                    <div className='mt-8'>
+                        <Label className='block text-sm font-semibold text-gray-600'>Capacitate cilindrica</Label>
+                        <div className='flex items-center'>
+                            <div className='relative'>
+                                <InputCustom
+                                    id="engineSize"
+                                    type="number"
+                                    placeholder="0"
+                                    className="p-6 pr-20 w-full"
+                                    onBlur={(e) => {
+                                        setSelectedEngineSize(e.target.value);
+                                        form.setValue("engineSize", parseInt(e.target.value, 10));
+                                        console.log(e.target.value);
+                                    }}
+                                />
+                                <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">cm3</span>
+                            </div>
+                            <Check className={cn("ml-3 h-6 w-6 text-green-500", Number(selectedEngineSize) > 0 ? "block" : "hidden")} />
+                        </div>
                     </div>
                 </div>
 
+                {/* Transmission */}
+                <div>
+                    <Label className='mt-8 block text-sm font-semibold mb-1'>Cutia de viteze</Label>
+                    <div className='p-1 flex border w-2/3 justify-between rounded-md items-center h-12'>
+                        <Button
+                            variant={"ghost"}
+                            onClick={() => {
+                                setSelectedTransmission("Manual");
+                            }}
+                            className='w-1/2'
+                        >
+                            Manuala
+                        </Button>
+                        <Separator orientation="vertical" className='mx-1' />
+                        <Button
+                            variant={"ghost"}
+                            onClick={() => {
+                                setSelectedTransmission("Automatic");
+                            }}
+                            className='w-1/2'
+                        >
+                            Automata
+                        </Button>
+                    </div>
+                </div>
 
+                {/* Images */}
+                <div className="mt-8">
+                    <Label className="block text-sm font-semibold text-gray-600 mb-2">Fotografii</Label>
+                    <div className="flex flex-wrap gap-4">
+                        {selectedPhotos.map((photo, index) => (
+                            <div
+                                key={index}
+                                className={`relative ${index === 0 ? 'w-[24rem] h-[18rem]' : 'w-[11rem] h-[8.5rem]'} border rounded-md overflow-hidden cursor-move`}
+                                draggable
+                                onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                                    const toIndex = index;
+                                    const newPhotos = [...selectedPhotos];
+                                    const [movedItem] = newPhotos.splice(fromIndex, 1);
+                                    newPhotos.splice(toIndex, 0, movedItem);
+                                    setSelectedPhotos(newPhotos);
+                                    form.setValue("photos", newPhotos);
+                                }}
+                            >
+                                <img src={"https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/" + photo + ".webp"} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                                {index === 0 && (
+                                    <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-md text-sm">
+                                        Poza principala
+                                    </div>
+                                )}
+                                <div className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded-md text-xs">
+                                    {index + 1}/{selectedPhotos.length}
+                                </div>
+                                <button
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1"
+                                    onClick={() => {
+                                        const newPhotos = selectedPhotos.filter((_, i) => i !== index);
+                                        setSelectedPhotos(newPhotos);
+                                        form.setValue("photos", newPhotos);
+                                    }}
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+                        ))}
+                        <label className="w-[11rem] h-[8.5rem] border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={async (e) => {
+                                    const files = Array.from(e.target.files || []);
+                                    setIsUploading(true);
+                                    try {
+                                        const uploadPromises = files.map(async (file) => {
+                                            const reader = new FileReader();
+                                            const fileDataPromise = new Promise((resolve) => {
+                                                reader.onload = (e) => resolve(e.target?.result);
+                                            });
+                                            reader.readAsDataURL(file);
+                                            const fileData = await fileDataPromise;
+                                            const fileUuid = crypto.randomUUID();
+                                            return { fileUuid, contentType: file.type, data: (fileData as string).split(',')[1] };
+                                        });
+                                        const filesData = await Promise.all(uploadPromises);
+                                        const response = await fetch('/api/upload', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-User-Id': 'user-id-here', // Replace with actual user ID
+                                            },
+                                            body: JSON.stringify({ files: filesData }),
+                                        });
+                                        if (!response.ok) {
+                                            throw new Error('Upload failed');
+                                        }
+                                        const { fileUrls } = await response.json();
+                                        const newPhotoIds = fileUrls.map((url: string) => {
+                                            const parts = url.split('/');
+                                            return parts[parts.length - 1].split('.')[0]; // Extract the UUID
+                                        });
+                                        setSelectedPhotos([...selectedPhotos, ...newPhotoIds]);
+                                        form.setValue("photos", [...selectedPhotos, ...newPhotoIds]);
+                                    } catch (error) {
+                                        console.error('Error uploading files:', error);
+                                        // Handle error (e.g., show error message to user)
+                                    } finally {
+                                        setIsUploading(false);
+                                    }
+                                }}
+                            />
+                            {isUploading ? (
+                                <div className="flex flex-col items-center">
+                                    <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+                                    <span className="mt-2 text-sm text-gray-500">Uploading...</span>
+                                </div>
+                            ) : (
+                                <Plus className="w-8 h-8 text-gray-400" />
+                            )}
+                        </label>
+                    </div>
+                </div>
 
                 {/* Submit Button */}
-                <Button className="mt-8 bg-blue-600" onClick={form.handleSubmit(onSubmit)}>
+                <Button className="mt-8 bg-blue-600 justify-end" onClick={form.handleSubmit(onSubmit)}>
                     Creeaza anuntul
                 </Button>
             </div>

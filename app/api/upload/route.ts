@@ -34,9 +34,9 @@ export async function POST(req: Request): Promise<Response> {
         }
 
         const uploadPromises = files.map(async (file: any) => {
-            const { fileUuid, fileExtension, contentType, data } = file;
+            const { fileUuid, contentType, data } = file;
 
-            if (!fileUuid || !fileExtension || !contentType || !data) {
+            if (!fileUuid || !contentType || !data) {
                 throw new Error('Missing file metadata or data');
             }
 
@@ -55,7 +55,7 @@ export async function POST(req: Request): Promise<Response> {
             const webpKey = `${userId}/${fileUuid}.webp`;
 
             const params = {
-                Bucket: "upload-bucket-olx",
+                Bucket: "upload-bucket-autovit",
                 Key: webpKey,
                 Body: webpBuffer,
                 ContentType: 'image/webp',

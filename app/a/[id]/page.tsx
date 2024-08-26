@@ -22,14 +22,12 @@ export default function Page({ params }: { params: { id: string } }) {
 
     useEffect(() => {
         async function fetchAd() {
-            const { data, error } = await supabase
+            let { data, error } = await supabase
                 .from('anunt')
                 .select('*')
                 .eq('id', params.id)
                 .single()
-            if (error) {
-                console.log('error', error);
-            }
+            if (error) console.log('error', error)
             if (data) {
                 setAd(data);
             }

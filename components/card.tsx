@@ -26,7 +26,7 @@ function formatNumberWithSpace(number: number) {
 
 export default function Card({ id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
-        <a href={`/anunt/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
+        <a href={`/a/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image

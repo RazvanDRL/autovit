@@ -32,7 +32,7 @@ function generateMockData() {
         brand: brand,
         model: model,
         price: Math.floor(Math.random() * 30000) + 5000, // între 5.000 și 35.000
-        engineSize: Math.floor(Math.random() * 2000) + 1000, // între 1.000 și 3.000
+        engine_size: Math.floor(Math.random() * 2000) + 1000, // între 1.000 și 3.000
         power: Math.floor(Math.random() * 400) + 100, // între 100 și 500
         km: Math.floor(Math.random() * 200000) + 5000, // între 5.000 și 205.000
         fuelType: getRandomItem(fuelTypes),

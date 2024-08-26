@@ -6,7 +6,7 @@ interface CardProps {
     id: string;
     title: string;
     price: number;
-    engineSize: number;
+    engine_size: number;
     power: number;
     description?: string;
     km: number;
@@ -24,7 +24,7 @@ function formatNumberWithSpace(number: number) {
     }).format(number).replace(/,/g, ' ');
 }
 
-export default function Card({ id, title, price, engineSize, power, description, km, fuelType, year, location, date, className }: CardProps) {
+export default function Card({ id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
         <a href={`/anunt/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
@@ -45,7 +45,7 @@ export default function Card({ id, title, price, engineSize, power, description,
                                 {title}
                             </h3>
                             <span className="text-black/50 text-xs">
-                                {formatNumberWithSpace(engineSize)} cm<sup>3</sup>
+                                {formatNumberWithSpace(engine_size)} cm<sup>3</sup>
                                 <span className="pl-1">&nbsp;-&nbsp;&nbsp;</span>
                                 {power} CP
                                 <span className="pl-1">&nbsp;-&nbsp;&nbsp;</span>

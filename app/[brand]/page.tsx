@@ -8,7 +8,7 @@ type Ad = {
     brand: string,
     model: string,
     price: number,
-    engineSize: number,
+    engine_size: number,
     power: number,
     km: number,
     fuelType: string,
@@ -45,7 +45,7 @@ export default function Page({ params }: { params: { brand: string } }) {
                         className="row-span-1"
                         title={ad.brand + " " + ad.model}
                         price={ad.price}
-                        engineSize={ad.engineSize}
+                        engine_size={ad.engine_size}
                         power={ad.power}
                         km={ad.km}
                         fuelType={ad.fuelType}

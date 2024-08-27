@@ -1,17 +1,15 @@
 import Image from "next/image";
-import Logo from "@/public/next.svg";
+import Logo from "@/public/logo.svg";
 import React from "react";
 import Link from "next/link";
 import { Heart, MessageCircle, User, UserRound } from "lucide-react";
-
-
 
 export default function Navbar() {
     return (
         <div className="w-full top-0 left-0 right-0 z-50 bg-primary">
             <div className="container mx-auto flex justify-between items-center py-3 px-16 bg-primary text-black">
-                <div className="text-white">
-                    eVandSiCumpar
+                <div className="">
+                    <Image src={Logo} alt="Logo" width={100} height={100} />
                 </div>
 
                 <div className="flex items-center justify-center gap-10">

@@ -155,6 +155,8 @@ export default function Page({ params }: { params: { id: string } }) {
                                                                     layout="fill"
                                                                     objectFit="cover"
                                                                     loading="eager"
+                                                                    fetchPriority="high"
+                                                                    priority
                                                                 />
                                                             </CardContent>
                                                         </Card>

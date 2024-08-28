@@ -1,5 +1,5 @@
 "use client";
-import Card from "@/components/card";
+import CardHorizontal from "@/components/cardHorizontal";
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -79,7 +79,7 @@ export default function Page({ params }: { params: { brand: string, model: strin
                 </div>
                 <div className="grid grid-rows-10 gap-3">
                     {ads.map((ad) => (
-                        <Card
+                        <CardHorizontal
                             key={ad.id}
                             id={ad.brand}
                             className="row-span-1"

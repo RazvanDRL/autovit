@@ -1,5 +1,5 @@
 "use client";
-import Card from "@/components/card"
+import CardHorizontal from "@/components/cardHorizontal";
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
 
@@ -39,7 +39,7 @@ export default function Page({ params }: { params: { brand: string } }) {
             <div className="container mx-auto grid grid-rows-10 gap-3">
 
                 {ad.map((ad) => (
-                    <Card
+                    <CardHorizontal
                         id={ad.brand}
                         key={ad.id}
                         className="row-span-1"

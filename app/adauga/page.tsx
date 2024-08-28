@@ -51,7 +51,7 @@ const models: { [key: string]: string[] } = {
 
 const years = Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i);
 
-const MAX_FILES = 10;
+const MAX_FILES = 40;
 const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_LENGTH = 30;
 

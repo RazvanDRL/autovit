@@ -1,88 +1,49 @@
-import { cn } from "@/lib/utils";
-import { Calendar, Fuel, Gauge, Heart, User } from "lucide-react";
+import { Heart } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface CardProps {
     id: string;
-    title: string;
+    brand: string;
+    model: string;
     price: number;
-    engine_size: number;
-    power: number;
-    description?: string;
-    km: number;
-    fuelType: string;
-    year: number;
     location: string;
     date: string;
-    className?: string;
+    photo: string;
 }
 
-function formatNumberWithSpace(number: number) {
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(number).replace(/,/g, ' ');
-}
-
-export default function Card({ id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
+export default function Card({ id, brand, model, price, location, date, photo }: CardProps) {
     return (
-        <a href={`/a/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
-            <div className="flex items-start"> {/* Ensure items are aligned at the start */}
-                <div className="w-[240px] h-[180px] relative">
-                    <Image
-                        src={`https://pub-6d5910db9c3d49d386074d553c5f4af0.r2.dev/${id}.webp`}
-                        alt="Placeholder"
-                        fill
-                        className="rounded-sm object-cover"
-                        priority
-                        quality={20}
-                    />
+        <Link href={`/a/${id}`} className="bg-white hover:scale-105 transition-all duration-300 rounded-sm max-w-[16rem] drop-shadow-xl">
+            <div className="relative h-[12rem] aspect-[4/3]">
+                <Image
+                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/${photo}.webp`}
+                    alt={`${brand} ${model} thumbnail`}
+                    layout="responsive"
+                    width={100}
+                    height={100}
+                    objectFit="cover"
+                    className="rounded-t-sm"
+                    fetchPriority="high"
+                    priority
+                    loading="eager"
+                    quality={10}
+                />
+            </div>
+            <div className="py-6 px-4 text-left">
+                <div className="flex justify-between">
+                    <h3 className="text-primary font-[300] text-sm">
+                        {brand} {model}
+                    </h3>
+                    <Heart size={20} className="text-primary cursor-pointer" />
                 </div>
-                <div className="flex-1 pl-4">
-                    <div className="flex justify-between">
-                        <div className="">
-                            <h3 className="text-primary font-[600] text-base">
-                                {title}
-                            </h3>
-                            <span className="text-black/50 text-xs">
-                                {formatNumberWithSpace(engine_size)} cm<sup>3</sup>
-                                <span className="pl-1">&nbsp;-&nbsp;&nbsp;</span>
-                                {power} CP
-                                <span className="pl-1">&nbsp;-&nbsp;&nbsp;</span>
-                                {description}
-                            </span>
-                            <div className="flex my-2">
-                                <div className="flex items-center mr-6">
-                                    <Gauge size={16} className="text-[#7F7F7F] mr-2" />
-                                    <span className="text-black/80 text-sm"> {formatNumberWithSpace(km)} km</span>
-                                </div>
-                                <div className="flex items-center mr-6">
-                                    <Fuel size={16} className="text-[#7F7F7F] mr-2" />
-                                    <span className="text-black/80 text-sm">{fuelType}</span>
-                                </div>
-                                <div className="flex items-center mr-6">
-                                    <Calendar size={16} className="text-[#7F7F7F] mr-2" />
-                                    <span className="text-black/80 text-sm">{year}</span>
-                                </div>
-                            </div>
-                            <div className="mt-4 text-xs text-black/80">
-                                {location}
-                            </div>
-                            <div className="mt-2 text-xs text-black/80">
-                                {date}
-                            </div>
-                            <div className="mt-4 flex items-center mr-6">
-                                <User size={16} className="text-[#7F7F7F] mr-2" />
-                                <span className="text-black/80 text-xs">Privat</span>
-                            </div>
-                        </div>
-                        <span className="text-black font-[500] text-[24px]">
-                            {formatNumberWithSpace(price)}
-                            <span className="pl-[4px] text-[12px]">EUR</span>
-                        </span>
-                    </div>
+                <p className="font-[600] mt-1">{price} lei</p>
+
+                <div className="text-[11px] flex flex-col items-left text-left mt-6 text-primary/50">
+                    <p className="">{location}</p>
+                    <div className="">{date}</div>
                 </div>
             </div>
-        </a>
+        </Link>
     );
 }

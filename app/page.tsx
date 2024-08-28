@@ -22,6 +22,8 @@ import {
 import { Configure, Hits, InfiniteHits, InstantSearch, SearchBox } from 'react-instantsearch';
 import { typesenseInstantsearchAdapter } from '@/lib/typesense';
 import { _Book } from '@/types/schema';
+import Card from '@/components/card';
+import { supabase } from '@/lib/supabaseClient';
 
 // Sample data with ad counts
 const carBrands = [
@@ -79,14 +81,14 @@ const transmissions = [
   { value: "Semi-automatic", label: "Semi-automatic" },
 ];
 
-const Hit = ({ hit }: { hit: _Book }) => {
-  return (
-    <div className='p-2'>
-      <h2>{hit.title}</h2>
-      <p>{hit.authors}</p>
-      <p>{hit.publication_year}</p>
-    </div>
-  );
+type Ad = {
+  id: string;
+  brand: string;
+  model: string;
+  price: number;
+  location: string;
+  date: string;
+  photos: string[];
 }
 
 const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
@@ -162,6 +164,33 @@ export default function Home() {
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
   const [totalAds, setTotalAds] = useState(0);
+  const [cards, setCards] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAds = async () => {
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('anunt')
+          .select('*')
+          .limit(10);
+
+        if (error) {
+          throw error;
+        }
+
+        setCards(data);
+      } catch (error) {
+        console.error('Error fetching ads:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    console.log(cards);
+    fetchAds();
+  }, []);
+
 
   useEffect(() => {
     // Calculate the total ads from all brands when the component mounts
@@ -262,6 +291,11 @@ export default function Home() {
             </Button>
           </div>
         </form>
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {cards.map((card) => (
+            <Card key={card.id} id={card.id} photo={card.photos[0]} brand={card.brand} model={card.model} price={card.price} location={card.location} date={card.date} />
+          ))}
+        </div>
       </main>
     </div>
   );

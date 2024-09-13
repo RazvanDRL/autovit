@@ -41,10 +41,10 @@ import { toast, Toaster } from "sonner";
 
 
 
-export default function Navbar({ id }: { id: string }) {
+export default function Navbar() {
     const router = useRouter();
     const [credits, setCredits] = useState(0);
-    const [avatar, setAvatar] = useState(localStorage.getItem(`avatar_${id}`) || "");
+    const [avatar, setAvatar] = useState("");
 
     async function logout() {
         console.log("Logout");
@@ -53,6 +53,7 @@ export default function Navbar({ id }: { id: string }) {
     }
 
     async function getCredits() {
+        console.log("Get credits");
         const id = (await supabase.auth.getUser()).data?.user?.id;
 
         if (!id) {
@@ -71,7 +72,7 @@ export default function Navbar({ id }: { id: string }) {
         if (data && data.length > 0) {
             if (data[0].avatar) {
                 setAvatar(data[0].avatar);
-                localStorage.setItem(`avatar_${id}`, data[0].avatar);
+                // localStorage.setItem(`avatar_${id}`, data[0].avatar);
             }
             if (data[0].credits)
                 setCredits(Number(data[0].credits));
@@ -80,11 +81,11 @@ export default function Navbar({ id }: { id: string }) {
 
     useEffect(() => {
         getCredits();
-    }, [id]);
+    }, []);
 
     return (
         <div className="w-full top-0 left-0 right-0 z-50 bg-primary">
-            <Toaster />
+            <Toaster richColors position='top-center' />
             <div className="container mx-auto flex justify-between items-center py-3 px-16 bg-primary text-black">
                 <div className="">
                     <Image src={Logo} alt="Logo" width={100} height={100} />

@@ -39,7 +39,7 @@ export default function Page({ params }: { params: { id: string } }) {
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
     const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
-    const [isFavorite, setIsFavorite] = useState(false);
+    const [isFavourite, setIsFavourite] = useState(false);
 
     useEffect(() => {
         async function fetchAd() {
@@ -81,15 +81,29 @@ export default function Page({ params }: { params: { id: string } }) {
     };
 
     const handleFavorite = async () => {
-        setIsFavorite(!isFavorite);
-        // if (isFavorite) {
-        //     await supabase
-        //         .from('favorites')
-        //         .insert({
-        //             user_id: user.id,
-        //             ad_id: ad.id,
-        //         });
-        // }
+        setIsFavourite(!isFavourite);
+        if (ad) {
+            if (!isFavourite) {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .insert({
+                        favourite_ads: [ad.id]
+                    })
+                if (error) console.log('error', error)
+                if (data) {
+                    console.log('data', data)
+                }
+            } else {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('favourite_ads', ad.id);
+                if (error) console.log('error', error)
+                if (data) {
+                    console.log('data', data)
+                }
+            }
+        }
     };
 
     useKeyPress("ArrowLeft", handlePrevious);
@@ -101,7 +115,7 @@ export default function Page({ params }: { params: { id: string } }) {
         <div>
             <Navbar />
             <div className="container mx-auto p-4">
-                <Toaster />
+                <Toaster richColors position='top-center' />
                 <div className="mb-4 flex justify-between items-center w-[48rem]">
                     <nav className="flex" aria-label="Breadcrumb">
                         <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -128,8 +142,8 @@ export default function Page({ params }: { params: { id: string } }) {
                     </nav>
                     <div className="flex space-x-2">
                         <Button onClick={handleFavorite} variant="outline" className="bg-white">
-                            <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current text-red-500' : ''}`} />
-                            {isFavorite ? 'Sterge de la favorite' : 'Adauga la favorite'}
+                            <Heart className={`h-4 w-4 mr-2 ${isFavourite ? 'fill-current text-red-500' : ''}`} />
+                            {isFavourite ? 'Sterge de la favorite' : 'Adauga la favorite'}
                         </Button>
                         <Button onClick={handleShare} variant="outline" className="bg-white">
                             <Share2 className="h-4 w-4 mr-2" />

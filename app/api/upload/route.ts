@@ -49,7 +49,9 @@ export async function POST(req: Request): Promise<Response> {
 
             // Convert the image to WebP format using sharp
             const webpBuffer = await sharp(buffer)
-                .webp({ quality: 80 }) // Adjust the quality as needed
+                // .resize({ width: 1280, height: 960, fit: 'cover' }) 4:3 aspect ratio at 720p
+                // .resize({ width: 640, height: 480, fit: 'cover' }) // 4:3 aspect ratio at 480p
+                .webp({ quality: 80 })
                 .toBuffer();
 
             const webpKey = `${userId}/${fileUuid}.webp`;

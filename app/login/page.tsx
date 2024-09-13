@@ -28,8 +28,7 @@ export default function Login() {
 
   return (
     <main>
-      <Toaster richColors />
-
+      <Toaster richColors position='top-center' />
       <div className='flex justify-center items-center h-screen'>
         <div className="absolute top-0 left-0 m-7">
           <Button variant="link" asChild>

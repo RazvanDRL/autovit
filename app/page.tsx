@@ -19,9 +19,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { Configure, Hits, InfiniteHits, InstantSearch, SearchBox } from 'react-instantsearch';
-import { typesenseInstantsearchAdapter } from '@/lib/typesense';
-import { _Book } from '@/types/schema';
 import Card from '@/components/card';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -187,10 +184,9 @@ export default function Home() {
         setLoading(false);
       }
     };
-    console.log(cards);
+
     fetchAds();
   }, []);
-
 
   useEffect(() => {
     // Calculate the total ads from all brands when the component mounts
@@ -215,18 +211,6 @@ export default function Home() {
     <div>
       <Navbar />
       <main className="lg:max-w-6xl mx-auto">
-        {/* <InstantSearch
-          indexName='books'
-          searchClient={typesenseInstantsearchAdapter.searchClient}
-          future={{ preserveSharedStateOnUnmount: true }}
-        >
-          <div className='flex'>
-            <main className='py-8'>
-              <SearchBox />
-              <Hits hitComponent={Hit} />
-            </main>
-          </div>
-        </InstantSearch> */}
         <form className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="col-span-2">
@@ -291,7 +275,7 @@ export default function Home() {
             </Button>
           </div>
         </form>
-        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {cards.map((card) => (
             <Card key={card.id} id={card.id} photo={card.photos[0]} brand={card.brand} model={card.model} price={card.price} location={card.location} date={card.date} />
           ))}

@@ -1,13 +1,46 @@
-import { useState } from 'react';
+"use client";
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabaseClient';
+import Link from 'next/link';
+import WhatsAppLogo from '@/public/whatsapp_logo.svg';
+import Image from 'next/image';
+import { MessageSquareMore } from 'lucide-react';
 
 interface ContactCardProps {
     phoneNumber: string;
 }
 
+interface User {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+}
+
 export const ContactCard = (props: ContactCardProps) => {
     const [showPhone, setShowPhone] = useState(false);
+    const [user, setUser] = useState<User | null>(null);
     const { phoneNumber } = props;
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const { data, error } = await supabase.auth.getUser();
+            if (error) {
+                console.error('Error fetching user:', error);
+            } else {
+                const { data: userData, error: userError } = await supabase.from('profiles').select('*').eq('id', data.user.id);
+                if (userError) {
+                    console.error('Error fetching user:', userError);
+                } else {
+                    setUser(userData[0]);
+                    console.log('User:', userData[0]);
+                }
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     const handleRevealPhone = () => {
         setShowPhone(true);
@@ -24,23 +57,24 @@ export const ContactCard = (props: ContactCardProps) => {
 
     return (
         <div className="p-4 border rounded-lg shadow-sm">
-            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
-            <h3>Posted by user</h3>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-xs opacity-50">Postat de</h3>
+                    <Link className="hover:text-blue-600" href={`/profile/${user?.id}`}>{user?.name}</Link>
+                </div>
+                <Image src={"/image.png"} alt="Avatar" height={50} width={50} className="" />
+            </div>
             <div className="space-y-4">
                 <div>
-                    <p className="font-medium">Phone:</p>
-                    {showPhone ? (
-                        <a href={`tel:${phoneNumber}`}>{phoneNumber}</a>
-                    ) : (
-                        <Button onClick={handleRevealPhone}>Reveal Phone Number</Button>
-                    )}
+                    <p className="font-medium mt-6">Telefon</p>
+                    <a href={`tel:${phoneNumber}`}>{phoneNumber}</a>
                 </div>
                 <div className="flex space-x-4">
                     <Button onClick={handleWhatsApp}>
-                        WhatsApp
+                        <Image src={WhatsAppLogo} alt="WhatsApp" height={20} width={20} className="mr-2" /> WhatsApp
                     </Button>
                     <Button onClick={handleInHouseChat}>
-                        Chat Now
+                        <MessageSquareMore className="mr-2" /> Chat Now
                     </Button>
                 </div>
             </div>

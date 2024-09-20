@@ -1,5 +1,6 @@
 import './globals.css'
 import { Inter } from 'next/font/google'
+import ErrorBoundary from '@/components/errorBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,7 +16,41 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
+      </body>
     </html>
   )
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', (event) => {
+    fetch('/api/report-error', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: event.message,
+        stack: event.error?.stack || 'No stack trace',
+        url: window.location.href,
+      }),
+    }).catch(console.error);
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    fetch('/api/report-error', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: event.reason?.message || 'Unhandled Promise Rejection',
+        stack: event.reason?.stack || 'No stack trace',
+        url: window.location.href,
+      }),
+    }).catch(console.error);
+  });
 }

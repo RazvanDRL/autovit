@@ -23,7 +23,7 @@ export default function CardHorizontal({ id, title, price, engine_size, power, d
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image
-                        src={`https://pub-6d5910db9c3d49d386074d553c5f4af0.r2.dev/${id}.webp`}
+                        src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/${id}.webp`}
                         alt="Placeholder"
                         fill
                         className="rounded-sm object-cover"

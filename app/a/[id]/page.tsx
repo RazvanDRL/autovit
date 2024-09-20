@@ -132,7 +132,7 @@ export default function Page({ params }: { params: { id: string } }) {
     return (
         <div>
             <Navbar />
-            <div className="container mx-auto p-4">
+            <div className="container mx-auto p-4 max-w-6xl">
                 <Toaster richColors position='top-center' />
                 <div className="mb-4 flex justify-between items-center w-[48rem]">
                     <nav className="flex" aria-label="Breadcrumb">
@@ -243,7 +243,7 @@ export default function Page({ params }: { params: { id: string } }) {
                     </div>
                 </div>
                 {/* Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 bg-white rounded-lg shadow-lg p-6">
+                <div className="mt-8 bg-white rounded-lg p-6">
                     <div className="space-y-6">
                         <h1 className="text-4xl font-bold text-gray-800 mb-2">{ad.brand} {ad.model}</h1>
                         <p className="text-3xl font-semibold text-green-600">€{ad.price.toLocaleString()}</p>
@@ -292,9 +292,33 @@ export default function Page({ params }: { params: { id: string } }) {
                             </div>
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Description</h2>
-                        <p className="text-gray-700 leading-relaxed">{ad.description}</p>
+                    {/* Description */}
+                    <div className="mt-16 space-y-4">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Descriere</h2>
+                        <p>{ad.description}</p>
+                    </div>
+
+                    {/* Similar ads */}
+                    <div className="mt-16 space-y-4">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Similar Ads</h2>
+                        <Carousel className="w-full">
+                            <CarouselContent>
+                                {/* Placeholder for similar ads. Replace with actual data fetching logic */}
+                                {[1, 2, 3, 4, 5].map((item) => (
+                                    <CarouselItem key={item} className="md:basis-1/3 lg:basis-1/5">
+                                        <div className="p-1">
+                                            <Card>
+                                                <CardContent className="flex aspect-square items-center justify-center p-6">
+                                                    <span className="text-3xl font-semibold">{item}</span>
+                                                </CardContent>
+                                            </Card>
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious />
+                            <CarouselNext />
+                        </Carousel>
                     </div>
                 </div>
             </div>

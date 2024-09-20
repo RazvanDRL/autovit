@@ -21,57 +21,19 @@ import {
 
 import Card from '@/components/card';
 import { supabase } from '@/lib/supabaseClient';
+import { carBrands } from '@/lib/carBrands';
+import { carModels } from '@/lib/carModels';
+import { years } from '@/lib/years';
+import { colors } from '@/lib/colors';
+import { useRouter } from 'next/navigation';
 
-// Sample data with ad counts
-const carBrands = [
-  { value: "bmw", label: "BMW", ads: 500 },
-  { value: "bercedes", label: "Mercedes", ads: 300 },
-  { value: "audi", label: "Audi", ads: 200 },
-  { value: "toyota", label: "Toyota", ads: 100 },
-];
-
-const carModels: { [key: string]: { name: string, ads: number }[] } = {
-  bmw: [
-    { name: "3 Series", ads: 200 },
-    { name: "5 Series", ads: 150 },
-    { name: "X5", ads: 100 },
-    { name: "i3", ads: 50 },
-  ],
-  mercedes: [
-    { name: "C-Class", ads: 100 },
-    { name: "E-Class", ads: 80 },
-    { name: "S-Class", ads: 70 },
-    { name: "GLE", ads: 50 },
-  ],
-  audi: [
-    { name: "A4", ads: 80 },
-    { name: "A6", ads: 70 },
-    { name: "Q5", ads: 30 },
-    { name: "e-tron", ads: 20 },
-  ],
-  toyota: [
-    { name: "Corolla", ads: 50 },
-    { name: "Camry", ads: 30 },
-    { name: "RAV4", ads: 15 },
-    { name: "Prius", ads: 5 },
-  ],
-};
-
-const years = Array.from({ length: 50 }, (_, i) => ({ value: (new Date().getFullYear() - i).toString(), label: (new Date().getFullYear() - i).toString() }));
-const colors = [
-  { value: "Black", label: "Black" },
-  { value: "White", label: "White" },
-  { value: "Silver", label: "Silver" },
-  { value: "Red", label: "Red" },
-  { value: "Blue", label: "Blue" },
-  { value: "Green", label: "Green" },
-];
 const fuelTypes = [
   { value: "Petrol", label: "Petrol" },
   { value: "Diesel", label: "Diesel" },
   { value: "Electric", label: "Electric" },
   { value: "Hybrid", label: "Hybrid" },
 ];
+
 const transmissions = [
   { value: "Automatic", label: "Automatic" },
   { value: "Manual", label: "Manual" },
@@ -89,7 +51,7 @@ type Ad = {
 }
 
 const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
-  options: { value: string; label: string; ads?: number }[];
+  options: { value: string; label: string }[];
   placeholder: string;
   value: string;
   onChange: (value: string) => void;
@@ -117,7 +79,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
           className={cn("w-full text-md justify-between bg-[#EBECEF] border-[#EBECEF] rounded-sm font-[400]", className)}
           disabled={disabled}
         >
-          {value || placeholder}
+          {options.find(option => option.value === value)?.label || placeholder}
           <ChevronDown className="ml-2 h-8 w-8 shrink-0" />
         </ButtonDropdown>
       </PopoverTrigger>
@@ -142,7 +104,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
                       value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {option.label} {option.ads !== undefined && `(${option.ads})`}
+                  {option.label}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -154,13 +116,13 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
 };
 
 export default function Home() {
+  const router = useRouter();
   const [brand, setBrand] = useState("");
   const [model, setModel] = useState("");
   const [year, setYear] = useState("");
   const [color, setColor] = useState("");
   const [fuelType, setFuelType] = useState("");
   const [transmission, setTransmission] = useState("");
-  const [totalAds, setTotalAds] = useState(0);
   const [cards, setCards] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -188,30 +150,18 @@ export default function Home() {
     fetchAds();
   }, []);
 
-  useEffect(() => {
-    // Calculate the total ads from all brands when the component mounts
-    const initialTotalAds = carBrands.reduce((sum, brand) => sum + brand.ads, 0);
-
-    // Update the totalAds count based on the selected brand and model
-    const selectedBrand = carBrands.find((b) => b.value === brand);
-    const selectedModel = carModels[brand]?.find((m) => m.name === model);
-
-    let adsCount = initialTotalAds;
-    if (selectedBrand) {
-      adsCount = selectedBrand.ads;
-      if (selectedModel) {
-        adsCount = selectedModel.ads;
-      }
-    }
-
-    setTotalAds(adsCount);
-  }, [brand, model]);
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // route is /search?brand=brand&model=model&year=year&color=color&fuelType=fuelType&transmission=transmission
+    const route = `/${brand}/${model}`;
+    router.push(route);
+  };
 
   return (
     <div>
       <Navbar />
       <main className="lg:max-w-6xl mx-auto">
-        <form className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
+        <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="col-span-2">
               <DropdownSelect
@@ -224,7 +174,7 @@ export default function Home() {
             </div>
             <div className="col-span-2">
               <DropdownSelect
-                options={brand ? carModels[brand].map((model) => ({ value: model.name, label: model.name, ads: model.ads })) : []}
+                options={brand ? carModels[brand as keyof typeof carModels].map(model => ({ value: model, label: model })) : []}
                 placeholder="Model"
                 value={model}
                 onChange={setModel}
@@ -270,8 +220,11 @@ export default function Home() {
             </div>
           </div>
           <div className="flex justify-end mt-8 w-full">
-            <Button type="submit" className="w-1/2 bg-[#C82814] font-semibold py-6 text-base">
-              Caută {totalAds} anunțuri
+            <Button
+              type="submit"
+              className="w-1/2 bg-[#C82814] font-semibold py-6 text-base"
+            >
+              Caută anunțuri
             </Button>
           </div>
         </form>

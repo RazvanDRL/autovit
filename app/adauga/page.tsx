@@ -39,6 +39,8 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Textarea } from '@/components/ui/textarea';
+import { useRouter } from 'next/navigation';
+import { delay } from '@/lib/delay';
 
 const brands = ['BMW', 'Mercedes', 'Audi', 'Toyota', 'Ford'];
 const models: { [key: string]: string[] } = {
@@ -140,6 +142,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
 
 export default function CarAdForm() {
     const [isUploading, setIsUploading] = useState(false);
+    const router = useRouter();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -167,11 +170,17 @@ export default function CarAdForm() {
         const { data: anuntData, error: anuntError } =
             await supabase
                 .from('anunt')
-                .insert([data]);
+                .insert([data])
+                .select('id'); // Ensure we get the ID of the inserted ad
+
         if (anuntError) {
             toast.error('Eroare la adaugarea anuntului!');
         } else {
-            toast.success('Anuntul a fost adaugat cu succes!');
+            toast.success('Anuntul a fost adaugat cu succes! Veti fi redirectat la pagina anuntului.');
+            await delay(2000);
+            if (anuntData && anuntData.length > 0 && anuntData[0].id) {
+                router.push(`/a/${anuntData[0].id}`);
+            }
         }
     }
 
@@ -558,7 +567,7 @@ export default function CarAdForm() {
                                                             field.onChange([...field.value, ...newPhotoIds]);
                                                         } catch (error) {
                                                             console.error('Error uploading files:', error);
-                                                            // Handle error (e.g., show error message to user)
+                                                            toast.error('Eroare la încărcarea fișierelor!');
                                                         } finally {
                                                             setIsUploading(false);
                                                         }

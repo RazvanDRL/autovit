@@ -1,7 +1,7 @@
 "use client";
 import { supabase } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
     Carousel,
     CarouselContent,
@@ -16,8 +16,9 @@ import { ContactCard } from "@/components/contact";
 import { toast, Toaster } from "sonner";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, ChevronRight } from "lucide-react";
+import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X } from "lucide-react";
 import Link from "next/link";
+import { formatNumberWithSpace } from "@/lib/numberFormat";
 
 type Ad = {
     id: string,
@@ -40,6 +41,8 @@ export default function Page({ params }: { params: { id: string } }) {
     const [api, setApi] = useState<CarouselApi>();
     const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
     const [isFavourite, setIsFavourite] = useState(false);
+    const [isOverlayOpen, setIsOverlayOpen] = useState(false);
+    const carouselRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         async function fetchAd() {
@@ -106,10 +109,25 @@ export default function Page({ params }: { params: { id: string } }) {
         }
     };
 
+    const toggleOverlay = () => {
+        setIsOverlayOpen(!isOverlayOpen);
+    };
+
     useKeyPress("ArrowLeft", handlePrevious);
     useKeyPress("ArrowRight", handleNext);
+    useKeyPress("Escape", () => setIsOverlayOpen(false));
 
-    if (!ad) return <div>Loading...</div>;
+    if (!ad) {
+        return (
+            <div className="flex justify-center items-center h-64">
+                <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
+                <span className="ml-2 text-gray-600">Loading...</span>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -154,10 +172,10 @@ export default function Page({ params }: { params: { id: string } }) {
                 <div className="flex flex-col">
                     <div className="flex">
                         <div className="">
-                            <div className="w-[48em] h-[27rem] aspect-[16/9] bg-gray-100 flex justify-center items-center relative rounded-sm overflow-hidden">
+                            <div ref={carouselRef} className="aspect-[4/3] w-[48rem] h-[36rem] bg-gray-100 flex justify-center items-center relative rounded-sm overflow-hidden">
                                 {ad.photos && ad.photos.length > 0 ? (
                                     <>
-                                        <Carousel className="aspect-[4/3] w-[36rem] h-full" opts={{ loop: true }} setApi={setApi}>
+                                        <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
                                             <CarouselContent>
                                                 {ad.photos.map((photo, index) => (
                                                     <CarouselItem key={index}>
@@ -177,8 +195,8 @@ export default function Page({ params }: { params: { id: string } }) {
                                                     </CarouselItem>
                                                 ))}
                                             </CarouselContent>
-                                            <CarouselPrevious onClick={handlePrevious} className="absolute left-4 top-1/2 transform -translate-y-1/2" />
-                                            <CarouselNext onClick={handleNext} className="absolute right-4 top-1/2 transform -translate-y-1/2" />
+                                            <CarouselPrevious onClick={handlePrevious} className="bg-white text-black hover:bg-gray-100 absolute opacity-80 left-4 top-1/2 transform -translate-y-1/2" />
+                                            <CarouselNext onClick={handleNext} className="bg-white text-black hover:bg-gray-100 absolute opacity-80 right-4 top-1/2 transform -translate-y-1/2" />
                                         </Carousel>
                                         <div className="text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
                                             {currentPhotoIndex + 1} / {ad.photos.length}
@@ -193,7 +211,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                     <Carousel className="w-full" opts={{ loop: true, align: "start" }} setApi={setThumbnailApi}>
                                         <CarouselContent className="-ml-1">
                                             {ad.photos.map((photo, index) => (
-                                                <CarouselItem key={index} className="pl-1" style={{ flex: '0 0 auto', width: `${100 / Math.min(ad.photos.length, 8) + 1.2}%` }}>
+                                                <CarouselItem key={index} className="pl-6" style={{ flex: '0 0 auto', width: `${100 / Math.min(ad.photos.length, 8) + 1.2}%` }}>
                                                     <div
                                                         className={`rounded-md aspect-[4/3] relative cursor-pointer ${index === currentPhotoIndex ? 'border-2 border-blue-500' : ''}`}
                                                         onClick={() => {
@@ -209,7 +227,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                                             objectFit="cover"
                                                             className="rounded-sm"
                                                             loading="lazy"
-                                                            quality={10}
+                                                            quality={0}
                                                         />
                                                     </div>
                                                 </CarouselItem>
@@ -224,20 +242,59 @@ export default function Page({ params }: { params: { id: string } }) {
                         </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div>
-                        <h1 className="text-3xl font-bold mb-2">{ad.brand} {ad.model}</h1>
-                        <p className="text-xl mb-4">Price: ${ad.price}</p>
-                        <p>Year: {ad.year}</p>
-                        <p>Mileage: {ad.km} km</p>
-                        <p>Fuel Type: {ad.fuelType}</p>
-                        <p>Engine Size: {ad.engine_size} L</p>
-                        <p>Power: {ad.power} HP</p>
-                        <p>Location: {ad.location}</p>
+                {/* Details */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 bg-white rounded-lg shadow-lg p-6">
+                    <div className="space-y-6">
+                        <h1 className="text-4xl font-bold text-gray-800 mb-2">{ad.brand} {ad.model}</h1>
+                        <p className="text-3xl font-semibold text-green-600">€{ad.price.toLocaleString()}</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <Calendar className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Year</p>
+                                    <p className="font-semibold">{ad.year}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <Gauge className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Mileage</p>
+                                    <p className="font-semibold">{formatNumberWithSpace(ad.km)} km</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <Fuel className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Fuel Type</p>
+                                    <p className="font-semibold">{ad.fuelType}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <Fuel className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Engine Size</p>
+                                    <p className="font-semibold">{formatNumberWithSpace(ad.engine_size)} cm<sup>3</sup></p>
+                                </div>
+                            </div>
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <Power className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Power</p>
+                                    <p className="font-semibold">{formatNumberWithSpace(ad.power)} HP</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
+                                <MapPin className="w-6 h-6 mr-3 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-500">Location</p>
+                                    <p className="font-semibold">{ad.location}</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-2xl font-semibold mb-2">Description</h2>
-                        <p>{ad.description}</p>
+                    <div className="space-y-4">
+                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Description</h2>
+                        <p className="text-gray-700 leading-relaxed">{ad.description}</p>
                     </div>
                 </div>
             </div>

@@ -21,16 +21,12 @@ export async function POST(req: Request): Promise<Response> {
 
         let { files } = await req.json();
 
-        if (!files) {
+        if (!files || (Array.isArray(files) && files.length === 0)) {
             return NextResponse.json({ error: 'No files provided' }, { status: 400 });
         }
 
         if (!Array.isArray(files)) {
             files = [files];
-        }
-
-        if (files.length === 0) {
-            return NextResponse.json({ error: 'No files provided' }, { status: 400 });
         }
 
         const uploadPromises = files.map(async (file: any) => {
@@ -47,11 +43,10 @@ export async function POST(req: Request): Promise<Response> {
                 throw new Error(`File size exceeds the maximum upload limit of 50MB for file ${fileUuid}`);
             }
 
-            // Convert the image to WebP format using sharp
+            // Optimize image processing with sharp
             const webpBuffer = await sharp(buffer)
-                // .resize({ width: 1280, height: 960, fit: 'cover' }) 4:3 aspect ratio at 720p
-                // .resize({ width: 640, height: 480, fit: 'cover' }) // 4:3 aspect ratio at 480p
-                .webp({ quality: 80 })
+                .resize({ width: 1280, height: 960, fit: 'inside', withoutEnlargement: true }) // Resize while maintaining aspect ratio
+                .webp({ quality: 80, effort: 6 }) // Use higher effort for better optimization
                 .toBuffer();
 
             const webpKey = `${userId}/${fileUuid}.webp`;

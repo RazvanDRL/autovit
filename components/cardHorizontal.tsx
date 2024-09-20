@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Calendar, Fuel, Gauge, Heart, User } from "lucide-react";
 import Image from "next/image";
-
+import { formatNumberWithSpace } from "@/lib/numberFormat";
 interface CardProps {
     id: string;
     title: string;
@@ -15,13 +15,6 @@ interface CardProps {
     location: string;
     date: string;
     className?: string;
-}
-
-function formatNumberWithSpace(number: number) {
-    return new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(number).replace(/,/g, ' ');
 }
 
 export default function CardHorizontal({ id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {

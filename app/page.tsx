@@ -160,7 +160,7 @@ export default function Home() {
   return (
     <div>
       <Navbar />
-      <main className="lg:max-w-6xl mx-auto">
+      <main className="mt-16 lg:max-w-6xl mx-auto">
         <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
             <div className="col-span-2">

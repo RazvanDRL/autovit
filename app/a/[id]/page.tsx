@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X } from "lucide-react";
 import Link from "next/link";
 import { formatNumberWithSpace } from "@/lib/numberFormat";
+import { Separator } from "@/components/ui/separator";
+import { formatTimeAgo } from "@/lib/timeFormat";
 
 type Ad = {
     id: string,
@@ -32,6 +34,7 @@ type Ad = {
     year: number,
     location: string,
     description: string,
+    created_at?: string,
     photos: string[]
 }
 
@@ -134,7 +137,7 @@ export default function Page({ params }: { params: { id: string } }) {
             <Navbar />
             <div className="container mx-auto p-4 max-w-6xl">
                 <Toaster richColors position='top-center' />
-                <div className="mb-4 flex justify-between items-center w-[48rem]">
+                <div className="mb-6 flex justify-between items-center w-full">
                     <nav className="flex" aria-label="Breadcrumb">
                         <ol className="inline-flex items-center space-x-1 md:space-x-3">
                             <li className="inline-flex items-center">
@@ -159,19 +162,28 @@ export default function Page({ params }: { params: { id: string } }) {
                         </ol>
                     </nav>
                     <div className="flex space-x-2">
-                        <Button onClick={handleFavorite} variant="outline" className="bg-white">
-                            <Heart className={`h-4 w-4 mr-2 ${isFavourite ? 'fill-current text-red-500' : ''}`} />
-                            {isFavourite ? 'Sterge de la favorite' : 'Adauga la favorite'}
+                        <Button onClick={handleFavorite} variant="ghost" size="icon" className="bg-white">
+                            <Heart className={`h-5 w-5 ${isFavourite ? 'fill-current text-red-500' : ''}`} />
                         </Button>
-                        <Button onClick={handleShare} variant="outline" className="bg-white">
-                            <Share2 className="h-4 w-4 mr-2" />
-                            Share
+                        <Button onClick={handleShare} variant="ghost" size="icon" className="bg-white">
+                            <Share2 className="h-5 w-5" />
                         </Button>
                     </div>
                 </div>
+                {/* add the price and title here */}
+                <Separator className="mb-6" />
+                <div className="flex justify-between mb-6">
+                    <div className="flex flex-col">
+                        <h1 className="text-3xl font-bold text-gray-900">{ad.brand} {ad.model}</h1>
+                        <p className="text-xs opacity-50 mt-1">
+                            Postat cu {ad.created_at ? formatTimeAgo(ad.created_at) : 'N/A'}
+                        </p>
+                    </div>
+                    <p className="text-3xl font-semibold mt-2 text-[#EB2126]">{formatNumberWithSpace(ad.price)} EUR</p>
+                </div>
                 <div className="flex flex-col">
-                    <div className="flex">
-                        <div className="">
+                    <div className="flex justify-between">
+                        <div>
                             <div ref={carouselRef} className="aspect-[4/3] w-[48rem] h-[36rem] bg-gray-100 flex justify-center items-center relative rounded-sm overflow-hidden">
                                 {ad.photos && ad.photos.length > 0 ? (
                                     <>
@@ -189,6 +201,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                                                     loading="eager"
                                                                     fetchPriority="high"
                                                                     priority
+                                                                    className="rounded-sm"
                                                                 />
                                                             </CardContent>
                                                         </Card>
@@ -209,9 +222,9 @@ export default function Page({ params }: { params: { id: string } }) {
                             {ad.photos && ad.photos.length > 0 && (
                                 <div className="mt-4">
                                     <Carousel className="w-full" opts={{ loop: true, align: "start" }} setApi={setThumbnailApi}>
-                                        <CarouselContent className="-ml-1">
+                                        <CarouselContent>
                                             {ad.photos.map((photo, index) => (
-                                                <CarouselItem key={index} className="pl-6" style={{ flex: '0 0 auto', width: `${100 / Math.min(ad.photos.length, 8) + 1.2}%` }}>
+                                                <CarouselItem key={index} className="pl-4" style={{ flex: '0 0 auto', width: `${100 / Math.min(ad.photos.length, 8) + 1.2}%` }}>
                                                     <div
                                                         className={`rounded-md aspect-[4/3] relative cursor-pointer ${index === currentPhotoIndex ? 'border-2 border-blue-500' : ''}`}
                                                         onClick={() => {
@@ -237,7 +250,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                 </div>
                             )}
                         </div>
-                        <div className="ml-4 flex-shrink-0">
+                        <div className="flex-shrink-0">
                             <ContactCard phoneNumber={"0770429755"} />
                         </div>
                     </div>
@@ -322,6 +335,6 @@ export default function Page({ params }: { params: { id: string } }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

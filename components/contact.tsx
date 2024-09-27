@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import WhatsAppLogo from '@/public/whatsapp_logo.svg';
 import Image from 'next/image';
-import { MessageSquareMore } from 'lucide-react';
+import { MessageSquareMore, Phone, Building2, User } from 'lucide-react';
+import { Separator } from '@radix-ui/react-separator';
 
 interface ContactCardProps {
     phoneNumber: string;
@@ -16,6 +17,7 @@ interface User {
     name: string;
     email: string;
     phone: string;
+    is_dealer: boolean;
 }
 
 export const ContactCard = (props: ContactCardProps) => {
@@ -60,21 +62,44 @@ export const ContactCard = (props: ContactCardProps) => {
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-xs opacity-50">Postat de</h3>
-                    <Link className="hover:text-blue-600" href={`/profile/${user?.id}`}>{user?.name}</Link>
+                    <Link className="hover:text-red-600" href={`/profile/${user?.id}`}>{user?.name}</Link>
+                    <div className="flex items-center mt-1">
+                        {user?.is_dealer ? (
+                            <>
+                                <Building2 className="h-4 w-4 mr-1 text-blue-500" />
+                                <span className="text-sm text-red-500">Dealer</span>
+                            </>
+                        ) : (
+                            <>
+                                <User className="h-4 w-4 mr-1 text-gray-500" />
+                                <span className="text-sm text-gray-500">Proprietar</span>
+                            </>
+                        )}
+                    </div>
                 </div>
                 <Image src={"/image.png"} alt="Avatar" height={50} width={50} className="" />
             </div>
+            
             <div className="space-y-4">
-                <div>
-                    <p className="font-medium mt-6">Telefon</p>
-                    <a href={`tel:${phoneNumber}`}>{phoneNumber}</a>
+                <div className="mt-16">
+                    {showPhone ? (
+                        <Link href={`tel:${phoneNumber}`}>
+                            <Button variant="outline" className="w-full flex items-center">
+                                <Phone className="mr-2 h-4 w-4" /> {phoneNumber}
+                            </Button>
+                        </Link>
+                    ) : (
+                        <Button onClick={handleRevealPhone} variant="outline" className="w-full flex items-center">
+                            <Phone className="mr-2 h-4 w-4" /> Afișează numărul
+                        </Button>
+                    )}
                 </div>
                 <div className="flex space-x-4">
-                    <Button onClick={handleWhatsApp}>
+                    <Button onClick={handleWhatsApp} className="bg-green-500 hover:bg-green-600">
                         <Image src={WhatsAppLogo} alt="WhatsApp" height={20} width={20} className="mr-2" /> WhatsApp
                     </Button>
-                    <Button onClick={handleInHouseChat}>
-                        <MessageSquareMore className="mr-2" /> Chat Now
+                    <Button onClick={handleInHouseChat} className="bg-blue-500 hover:bg-blue-600">
+                        <MessageSquareMore className="mr-2" /> Contactează
                     </Button>
                 </div>
             </div>

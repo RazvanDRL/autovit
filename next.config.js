@@ -13,6 +13,7 @@ const nextConfig = {
                 hostname: "lh3.googleusercontent.com",
             },
         ],
+        domains: ['secure.twispay.com', 'secure-stage.twispay.com'],
     },
 }
 

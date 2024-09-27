@@ -45,7 +45,7 @@ export default function Navbar() {
     const router = useRouter();
     const [credits, setCredits] = useState(0);
     const [avatar, setAvatar] = useState("");
-
+    const [email, setEmail] = useState("");
     async function logout() {
         console.log("Logout");
         await supabase.auth.signOut();
@@ -54,16 +54,16 @@ export default function Navbar() {
 
     async function getCredits() {
         console.log("Get credits");
-        const id = (await supabase.auth.getUser()).data?.user?.id;
-
-        if (!id) {
+        const user = (await supabase.auth.getUser()).data?.user;
+        if (!user) {
             return;
         }
 
+        setEmail(user.email || "");
         const { data, error } = await supabase
             .from('profiles')
             .select('credits,avatar')
-            .eq('id', id);
+            .eq('id', user.id);
 
         if (error) {
             toast.error(error.message);
@@ -106,28 +106,24 @@ export default function Navbar() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="w-56">
-                                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                                <DropdownMenuLabel>{email}</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
                                     <DropdownMenuItem>
                                         <User className="mr-2 h-4 w-4" />
-                                        <span>Profile</span>
-                                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                                        <span>Profil</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <CreditCard className="mr-2 h-4 w-4" />
-                                        <span>Billing</span>
-                                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                                        <span>Anunturi</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Settings className="mr-2 h-4 w-4" />
                                         <span>Settings</span>
-                                        <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem>
                                         <Keyboard className="mr-2 h-4 w-4" />
                                         <span>Keyboard shortcuts</span>
-                                        <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
                                     </DropdownMenuItem>
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />

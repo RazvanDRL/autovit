@@ -26,6 +26,7 @@ import { carModels } from '@/lib/carModels';
 import { years } from '@/lib/years';
 import { colors } from '@/lib/colors';
 import { useRouter } from 'next/navigation';
+import Loading from '@/components/loading';
 
 const fuelTypes = [
   { value: "Petrol", label: "Petrol" },
@@ -48,6 +49,9 @@ type Ad = {
   location: string;
   date: string;
   photos: string[];
+  year: number;
+  km: number;
+  fuelType: string;
 }
 
 const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
@@ -157,6 +161,10 @@ export default function Home() {
     router.push(route);
   };
 
+  if (loading) {
+    return <Loading />;
+  }
+
   return (
     <div>
       <Navbar />
@@ -230,7 +238,19 @@ export default function Home() {
         </form>
         <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {cards.map((card) => (
-            <Card key={card.id} id={card.id} photo={card.photos[0]} brand={card.brand} model={card.model} price={card.price} location={card.location} date={card.date} />
+            <Card
+              key={card.id}
+              id={card.id}
+              photo={card.photos[0]}
+              brand={card.brand}
+              model={card.model}
+              price={card.price}
+              location={card.location}
+              date={card.date}
+              year={card.year}
+              km={card.km}
+              fuelType={card.fuelType}
+            />
           ))}
         </div>
       </main>

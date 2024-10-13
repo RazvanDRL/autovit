@@ -95,11 +95,11 @@ export const ContactCard = (props: ContactCardProps) => {
                     )}
                 </div>
                 <div className="flex space-x-4">
-                    <Button onClick={handleWhatsApp} className="bg-green-500 hover:bg-green-600">
+                    <Button onClick={handleWhatsApp} className="bg-green-500 hover:bg-green-600 hover:scale-105 transition-all duration-300">
                         <Image src={WhatsAppLogo} alt="WhatsApp" height={20} width={20} className="mr-2" /> WhatsApp
                     </Button>
-                    <Button onClick={handleInHouseChat} className="bg-blue-500 hover:bg-blue-600">
-                        <MessageSquareMore className="mr-2" /> Contactează
+                    <Button onClick={handleInHouseChat} className="bg-[#EB2126] hover:bg-[#EB2126]/90 hover:scale-105 transition-all duration-300">
+                        <MessageSquareMore className="h-5 w-4 mr-2" /> Contactează
                     </Button>
                 </div>
             </div>

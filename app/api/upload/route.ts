@@ -13,10 +13,16 @@ const s3 = new S3({
 
 export async function POST(req: Request): Promise<Response> {
     try {
-        const userId = req.headers.get('X-User-Id');
+        const accessToken = req.headers.get('Authorization');
 
-        if (!userId) {
-            return NextResponse.json({ error: 'Missing User ID' }, { status: 400 });
+        if (!accessToken) {
+            return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
+        }
+
+        const { data: { user } } = await supabaseAdmin.auth.getUser(accessToken);
+
+        if (!user) {
+            return NextResponse.json({ error: 'Invalid access token' }, { status: 401 });
         }
 
         let { files } = await req.json();
@@ -49,7 +55,7 @@ export async function POST(req: Request): Promise<Response> {
                 .webp({ quality: 80, effort: 6 }) // Use higher effort for better optimization
                 .toBuffer();
 
-            const webpKey = `${userId}/${fileUuid}.webp`;
+            const webpKey = `${user.id}/${fileUuid}.webp`;
 
             const params = {
                 Bucket: "upload-bucket-autovit",

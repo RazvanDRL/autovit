@@ -210,9 +210,11 @@ export default function Navbar() {
                             )}
                         </DropdownMenu>
                     </div>
-                    <Button variant="outline" className="font-semibold text-primary py-3 px-5 flex items-center justify-center rounded-md group relative overflow-hidden">
-                        <Plus className="mr-2 h-5 w-5" /> Adaugă un anunț
-                    </Button>
+                    <Link href="/adauga">
+                        <Button variant="outline" className="font-semibold text-primary py-3 px-5 flex items-center justify-center rounded-md group relative overflow-hidden hover:scale-105 transition-all duration-300">
+                            <Plus className="mr-2 h-5 w-5" /> Adaugă un anunț
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>

@@ -66,7 +66,7 @@ export default function Card({
         >
             <div className="relative" style={{ height: config.imageHeight }}>
                 <Image
-                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/${photo}.webp`}
+                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`}
                     alt={`${brand} ${model} thumbnail`}
                     layout="fill"
                     objectFit="cover"

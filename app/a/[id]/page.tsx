@@ -16,11 +16,14 @@ import { ContactCard } from "@/components/contact";
 import { toast, Toaster } from "sonner";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X } from "lucide-react";
+import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X, Zap, Droplet, Car } from "lucide-react";
 import Link from "next/link";
 import { formatNumberWithSpace } from "@/lib/numberFormat";
 import { Separator } from "@/components/ui/separator";
 import { formatTimeAgo } from "@/lib/timeFormat";
+import { User as UserType } from "@supabase/supabase-js";
+import Loading from "@/components/loading";
+import Footer from "@/components/footer";
 
 type Ad = {
     id: string,
@@ -30,16 +33,18 @@ type Ad = {
     engine_size: number,
     power: number,
     km: number,
-    fuelType: string,
+    fuel_type: string,
     year: number,
     location: string,
     description: string,
+    short_description: string,
     created_at?: string,
     photos: string[]
 }
 
 export default function Page({ params }: { params: { id: string } }) {
     const [ad, setAd] = useState<Ad | null>(null);
+    const [user, setUser] = useState<UserType | null>(null);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
     const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
@@ -60,7 +65,14 @@ export default function Page({ params }: { params: { id: string } }) {
             }
         }
 
+        async function fetchUser() {
+            const { data, error } = await supabase.auth.getUser();
+            if (error) console.log('error', error)
+            if (data) setUser(data.user);
+        }
+
         fetchAd();
+        fetchUser();
     }, [params.id]);
 
     const handlePrevious = useCallback(() => {
@@ -120,16 +132,8 @@ export default function Page({ params }: { params: { id: string } }) {
     useKeyPress("ArrowRight", handleNext);
     useKeyPress("Escape", () => setIsOverlayOpen(false));
 
-    if (!ad) {
-        return (
-            <div className="flex justify-center items-center h-64">
-                <svg className="animate-spin h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <span className="ml-2 text-gray-600">Loading...</span>
-            </div>
-        );
+    if (!ad || !user) {
+        return <Loading />;
     }
 
     return (
@@ -174,9 +178,9 @@ export default function Page({ params }: { params: { id: string } }) {
                 <Separator className="mb-6" />
                 <div className="flex justify-between mb-6">
                     <div className="flex flex-col">
-                        <h1 className="text-3xl font-bold text-gray-900">{ad.brand} {ad.model}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900">{ad.brand}{" "}{ad.model}{" - "}{ad.short_description}</h1>
                         <p className="text-xs opacity-50 mt-1">
-                            Postat cu {ad.created_at ? formatTimeAgo(ad.created_at) : 'N/A'}
+                            Postat cu {ad.created_at ? formatTimeAgo(ad.created_at) : ''}
                         </p>
                     </div>
                     <p className="text-3xl font-semibold mt-2 text-[#EB2126]">{formatNumberWithSpace(ad.price)} EUR</p>
@@ -194,7 +198,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                                         <Card>
                                                             <CardContent className="p-0 aspect-[4/3] relative">
                                                                 <Image
-                                                                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/${photo}.webp`}
+                                                                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`}
                                                                     alt={`${ad.brand} ${ad.model}`}
                                                                     layout="fill"
                                                                     objectFit="cover"
@@ -234,7 +238,7 @@ export default function Page({ params }: { params: { id: string } }) {
                                                         }}
                                                     >
                                                         <Image
-                                                            src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/user-id-here/${photo}.webp`}
+                                                            src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`}
                                                             alt={`${ad.brand} ${ad.model} thumbnail`}
                                                             layout="fill"
                                                             objectFit="cover"
@@ -249,92 +253,56 @@ export default function Page({ params }: { params: { id: string } }) {
                                     </Carousel>
                                 </div>
                             )}
+                            <Separator className="my-8" />
+                            <div>
+                                {/* Stats */}
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-4">
+                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
+                                        <Gauge className="w-8 h-8 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500 mb-1.5">Km</p>
+                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.km)} km</p>
+                                    </div>
+                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
+                                        <Fuel className="w-8 h-8 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500 mb-1.5">Combustibil</p>
+                                        <p className="text-sm font-bold text-gray-900">{ad.fuel_type}</p>
+                                    </div>
+                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
+                                        <Zap className="w-8 h-8 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500 mb-1.5">Putere</p>
+                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.power)} CP</p>
+                                    </div>
+                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
+                                        <Car className="w-8 h-8 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500 mb-1.5">Capacitate</p>
+                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.engine_size)} cm<sup>3</sup></p>
+                                    </div>
+                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
+                                        <Calendar className="w-8 h-8 mb-1 text-gray-500" />
+                                        <p className="text-xs text-gray-500 mb-1.5">An fabricație</p>
+                                        <p className="text-sm font-bold text-gray-900">{ad.year}</p>
+                                    </div>
+                                </div>
+                                <Separator className="my-8" />
+                                {/* Description */}
+                                <div>
+                                    <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
+                                    <div
+                                        className="font-[350] opacity-90"
+                                        dangerouslySetInnerHTML={{
+                                            __html: ad.description.replace(/<p>\s*<\/p>/g, '<br>')
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
                         <div className="flex-shrink-0">
                             <ContactCard phoneNumber={"0770429755"} />
                         </div>
                     </div>
                 </div>
-                {/* Details */}
-                <div className="mt-8 bg-white rounded-lg p-6">
-                    <div className="space-y-6">
-                        <h1 className="text-4xl font-bold text-gray-800 mb-2">{ad.brand} {ad.model}</h1>
-                        <p className="text-3xl font-semibold text-green-600">€{ad.price.toLocaleString()}</p>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <Calendar className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Year</p>
-                                    <p className="font-semibold">{ad.year}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <Gauge className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Mileage</p>
-                                    <p className="font-semibold">{formatNumberWithSpace(ad.km)} km</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <Fuel className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Fuel Type</p>
-                                    <p className="font-semibold">{ad.fuelType}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <Fuel className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Engine Size</p>
-                                    <p className="font-semibold">{formatNumberWithSpace(ad.engine_size)} cm<sup>3</sup></p>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <Power className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Power</p>
-                                    <p className="font-semibold">{formatNumberWithSpace(ad.power)} HP</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center p-3 bg-gray-100 rounded-lg">
-                                <MapPin className="w-6 h-6 mr-3 text-blue-500" />
-                                <div>
-                                    <p className="text-sm text-gray-500">Location</p>
-                                    <p className="font-semibold">{ad.location}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {/* Description */}
-                    <div className="mt-16 space-y-4">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Descriere</h2>
-                        <p>{ad.description}</p>
-                    </div>
-
-                    {/* Similar ads */}
-                    <div className="mt-16 space-y-4">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">Similar Ads</h2>
-                        <Carousel className="w-full">
-                            <CarouselContent>
-                                {/* Placeholder for similar ads. Replace with actual data fetching logic */}
-                                {[1, 2, 3, 4, 5].map((item) => (
-                                    <CarouselItem key={item} className="md:basis-1/3 lg:basis-1/5">
-                                        <div className="p-1">
-                                            <Card>
-                                                <CardContent className="flex aspect-square items-center justify-center p-6">
-                                                    <span className="text-3xl font-semibold">{item}</span>
-                                                </CardContent>
-                                            </Card>
-                                        </div>
-                                    </CarouselItem>
-                                ))}
-                            </CarouselContent>
-                            <CarouselPrevious />
-                            <CarouselNext />
-                        </Carousel>
-                    </div>
-                </div>
             </div>
+            <Footer />
         </div >
     )
 }

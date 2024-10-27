@@ -148,7 +148,7 @@ export default function CarAdForm() {
     const [isUploading, setIsUploading] = useState(false);
     const [user, setUser] = useState<UserType | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
-
+    const [listingId, setListingId] = useState<string | null>(null);
     useEffect(() => {
         async function fetchUserData() {
             const { data: { user } } = await supabase.auth.getUser();
@@ -525,7 +525,11 @@ export default function CarAdForm() {
                                                                 field.onChange(newPhotos);
                                                             }}
                                                         >
-                                                            <img src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                                                            <img
+                                                                src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${listingId}/${photo}-thumbnail.webp`}
+                                                                alt={`Photo ${index + 1}`}
+                                                                className="w-full h-full object-cover"
+                                                            />
                                                             {index === 0 && (
                                                                 <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-md text-sm">
                                                                     Poza principala
@@ -555,6 +559,9 @@ export default function CarAdForm() {
                                                             onChange={async (e) => {
                                                                 const files = Array.from(e.target.files || []);
                                                                 setIsUploading(true);
+                                                                const listingId = crypto.randomUUID();
+                                                                setListingId(listingId);
+
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {
                                                                         const reader = new FileReader();
@@ -564,8 +571,10 @@ export default function CarAdForm() {
                                                                         reader.readAsDataURL(file);
                                                                         const fileData = await fileDataPromise;
                                                                         const fileUuid = crypto.randomUUID();
-                                                                        return { fileUuid, contentType: file.type, data: (fileData as string).split(',')[1] };
+
+                                                                        return { listingId, fileUuid, contentType: file.type, data: (fileData as string).split(',')[1] };
                                                                     });
+
                                                                     const filesData = await Promise.all(uploadPromises);
                                                                     const response = await fetch('/api/upload', {
                                                                         method: 'POST',
@@ -575,15 +584,16 @@ export default function CarAdForm() {
                                                                         },
                                                                         body: JSON.stringify({ files: filesData }),
                                                                     });
+
                                                                     if (!response.ok) {
                                                                         throw new Error('Upload failed');
                                                                     }
+
                                                                     const { fileUrls } = await response.json();
-                                                                    const newPhotoIds = fileUrls.map((url: string) => {
-                                                                        const parts = url.split('/');
-                                                                        return parts[parts.length - 1].split('.')[0]; // Extract the UUID
-                                                                    });
+                                                                    // Each fileUrl object now contains originalUrl and thumbnailUrl
+                                                                    const newPhotoIds = filesData.map(data => data.fileUuid);
                                                                     field.onChange([...field.value, ...newPhotoIds]);
+
                                                                 } catch (error) {
                                                                     console.error('Error uploading files:', error);
                                                                     toast.error('Eroare la încărcarea fișierelor!');

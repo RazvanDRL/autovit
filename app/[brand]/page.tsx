@@ -1,6 +1,7 @@
 "use client";
 import CardHorizontal from "@/components/cardHorizontal";
 import { supabase } from "@/lib/supabaseClient";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 
 type Ad = {
@@ -18,14 +19,15 @@ type Ad = {
 }
 
 
-export default function Page({ params }: { params: { brand: string } }) {
+export default function Page() {
+    const params = useParams<{ brand: string }>();
     const [ad, setAd] = useState<Array<Ad>>([])
 
     console.log(params)
 
     async function fetchAds() {
         let { data: ads, error } = await supabase
-            .from('anunt')
+            .from('listings')
             .select('*')
             .ilike('brand', params.brand)
         if (error) console.log('error', error)
@@ -40,6 +42,7 @@ export default function Page({ params }: { params: { brand: string } }) {
 
                 {ad.map((ad) => (
                     <CardHorizontal
+                        listingId={ad.id}
                         id={ad.brand}
                         key={ad.id}
                         className="row-span-1"

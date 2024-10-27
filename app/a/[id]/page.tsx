@@ -24,7 +24,7 @@ import { formatTimeAgo } from "@/lib/timeFormat";
 import { User as UserType } from "@supabase/supabase-js";
 import Loading from "@/components/loading";
 import Footer from "@/components/footer";
-
+import { useParams } from "next/navigation";
 type Ad = {
     id: string,
     brand: string,
@@ -42,7 +42,8 @@ type Ad = {
     photos: string[]
 }
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page() {
+    const params = useParams<{ id: string }>();
     const [ad, setAd] = useState<Ad | null>(null);
     const [user, setUser] = useState<UserType | null>(null);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -55,7 +56,7 @@ export default function Page({ params }: { params: { id: string } }) {
     useEffect(() => {
         async function fetchAd() {
             const { data, error } = await supabase
-                .from('anunt')
+                .from('listings')
                 .select('*')
                 .eq('id', params.id)
                 .single()

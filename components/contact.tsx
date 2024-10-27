@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
-import WhatsAppLogo from '@/public/whatsapp_logo.svg';
+import WhatsAppLogo from '@/public/logos/whatsapp.svg';
 import Image from 'next/image';
 import { MessageSquareMore, Phone, Building2, User } from 'lucide-react';
 import { Separator } from '@radix-ui/react-separator';
@@ -79,7 +79,7 @@ export const ContactCard = (props: ContactCardProps) => {
                 </div>
                 <Image src={"/image.png"} alt="Avatar" height={50} width={50} className="" />
             </div>
-            
+
             <div className="space-y-4">
                 <div className="mt-16">
                     {showPhone ? (

@@ -37,7 +37,7 @@ export default function Profile() {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
             const { data, error } = await supabase
-                .from('anunt')
+                .from('listings')
                 .select('*')
                 .eq('user_id', user.id);
             if (data) setPastAds(data);

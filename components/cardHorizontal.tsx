@@ -2,7 +2,9 @@ import { cn } from "@/lib/utils";
 import { Calendar, Fuel, Gauge, Heart, User } from "lucide-react";
 import Image from "next/image";
 import { formatNumberWithSpace } from "@/lib/numberFormat";
+
 interface CardProps {
+    listingId: string;
     id: string;
     title: string;
     price: number;
@@ -17,13 +19,13 @@ interface CardProps {
     className?: string;
 }
 
-export default function CardHorizontal({ id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
+export default function CardHorizontal({ listingId, id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
         <a href={`/a/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image
-                        src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${id}.webp`}
+                        src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${listingId}/${id}-thumbnail.webp`}
                         alt="Placeholder"
                         fill
                         className="rounded-sm object-cover"

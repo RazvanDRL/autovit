@@ -36,9 +36,9 @@ export async function POST(req: Request): Promise<Response> {
         }
 
         const uploadPromises = files.map(async (file: any) => {
-            const { fileUuid, contentType, data } = file;
+            const { listingId, fileUuid, contentType, data } = file;
 
-            if (!fileUuid || !contentType || !data) {
+            if (!fileUuid || !contentType || !data || !listingId) {
                 throw new Error('Missing file metadata or data');
             }
 
@@ -49,13 +49,13 @@ export async function POST(req: Request): Promise<Response> {
                 throw new Error(`File size exceeds the maximum upload limit of 50MB for file ${fileUuid}`);
             }
 
-            // Optimize image processing with sharp
+            // Optimize image processing with sharp for original image
             const webpBuffer = await sharp(buffer)
-                .resize({ width: 1280, height: 960, fit: 'inside', withoutEnlargement: true }) // Resize while maintaining aspect ratio
-                .webp({ quality: 80, effort: 6 }) // Use higher effort for better optimization
+                .resize({ width: 1280, height: 960, fit: 'inside', withoutEnlargement: true })
+                .webp({ quality: 80, effort: 6 })
                 .toBuffer();
 
-            const webpKey = `${user.id}/${fileUuid}.webp`;
+            const webpKey = `${listingId}/${fileUuid}.webp`;
 
             const params = {
                 Bucket: "upload-bucket-autovit",
@@ -66,7 +66,27 @@ export async function POST(req: Request): Promise<Response> {
 
             await s3.upload(params).promise();
 
-            return `https://${params.Bucket}.r2.cloudflarestorage.com/${webpKey}`;
+            // Create thumbnail
+            const thumbnailBuffer = await sharp(buffer)
+                .resize({ width: 320, height: 240, fit: 'inside', withoutEnlargement: true }) // Thumbnail size
+                .webp({ quality: 80, effort: 6 })
+                .toBuffer();
+
+            const thumbnailKey = `${listingId}/${fileUuid}-thumbnail.webp`;
+
+            const thumbnailParams = {
+                Bucket: "upload-bucket-autovit",
+                Key: thumbnailKey,
+                Body: thumbnailBuffer,
+                ContentType: 'image/webp',
+            };
+
+            await s3.upload(thumbnailParams).promise();
+
+            return {
+                originalUrl: `https://${params.Bucket}.r2.cloudflarestorage.com/${webpKey}`,
+                thumbnailUrl: `https://${thumbnailParams.Bucket}.r2.cloudflarestorage.com/${thumbnailKey}`,
+            };
         });
 
         // Execute all upload promises and collect the URLs

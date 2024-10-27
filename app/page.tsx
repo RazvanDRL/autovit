@@ -135,7 +135,7 @@ export default function Home() {
       setLoading(true);
       try {
         const { data, error } = await supabase
-          .from('anunt')
+          .from('listings')
           .select('*')
           .limit(10);
 

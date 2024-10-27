@@ -46,7 +46,7 @@ async function insertMockData() {
     const mockData = generateMockData();
 
     const { data, error } = await supabaseAdmin
-        .from('anunt')
+        .from('listings')
         .insert([mockData]);
 
     if (error) {

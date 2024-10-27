@@ -1,8 +1,8 @@
 "use client";
 import CardHorizontal from "@/components/cardHorizontal";
 import { supabase } from "@/lib/supabaseClient";
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 type Ad = {
     id: string,
@@ -29,16 +29,17 @@ const filterOptions = [
     { label: "Cea mai mare putere", value: "power:desc" },
 ];
 
-export default function Page({ params }: { params: { brand: string, model: string } }) {
+export default function Page() {
+    const params = useParams<{ brand: string, model: string }>();
     const [ads, setAds] = useState<Array<Ad>>([]);
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const selectedFilter = searchParams.get('search[order]') || 'created_at:desc';
 
-    async function fetchAds(filter: string) {
+    const fetchAds = useCallback(async (filter: string) => {
         let query = supabase
-            .from('anunt')
+            .from('listings')
             .select('*')
             .ilike('brand', params.brand)
             .ilike('model', params.model)
@@ -50,11 +51,11 @@ export default function Page({ params }: { params: { brand: string, model: strin
         let { data: ads, error } = await query;
         if (error) console.log('error', error);
         setAds(ads || []);
-    }
+    }, [params.brand, params.model]);
 
     useEffect(() => {
         fetchAds(selectedFilter);
-    }, [selectedFilter, params.brand, params.model]);
+    }, [selectedFilter, fetchAds]);
 
     const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newFilter = e.target.value;
@@ -81,6 +82,7 @@ export default function Page({ params }: { params: { brand: string, model: strin
                     {ads.map((ad) => (
                         <CardHorizontal
                             key={ad.id}
+                            listingId={ad.id}
                             id={ad.brand}
                             className="row-span-1"
                             title={ad.brand + " " + ad.model}

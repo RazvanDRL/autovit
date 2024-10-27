@@ -1,21 +1,29 @@
-"use client"
-import Image from 'next/image'
-import Link from 'next/link'
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
-import { UserAuthForm } from '@/components/user-auth-form'
+'use client';
+import Image from 'next/image';
+import { toast, Toaster } from 'sonner';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, ExternalLink, Home, LogIn } from 'lucide-react';
+import Google from '@/public/logos/google.svg';
+import Twitter from '@/public/logos/x.svg';
+import Link from 'next/link';
+import { supabase } from '@/lib/supabaseClient';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
-import Logo from '@/public/logo.svg'
+import { Input } from '@/components/ui/input';
+import GmailLogo from '@/public/logos/gmail.svg';
+import Loading from '@/components/loading';
+import Logo from '@/public/logo.svg';
+
+const BASE_URL = process.env.NODE_ENV === 'production'
+  ? 'https://autovit.vercel.app'
+  : 'http://localhost:3000';
 
 export default function Login() {
-  const router = useRouter()
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+  const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -23,103 +31,141 @@ export default function Login() {
       if (user) {
         router.replace('/');
       }
+      setLoadingUser(false);
     };
     checkUser();
-  }, []);
+  }, [router]);
 
-  const handleEmailLogin = async (email: string) => {
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
-    setMessage(null);
     const { error } = await supabase.auth.signInWithOtp({
       email,
+      options: {
+        emailRedirectTo: `${BASE_URL}/`,
+      },
     });
     if (error) {
-      setError(error.message);
+      toast.error(error.message);
     } else {
-      setMessage("Magic link sent! Please check your email.");
+      toast.success("Magic link sent! Please check your email.");
+      setIsEmailSent(true);
     }
     setLoading(false);
   };
 
+  const handleOAuthLogin = async (provider: "google" | "twitter") => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: `${BASE_URL}/`,
+      },
+    });
+    if (error) {
+      toast.error(error.message);
+    }
+    setLoading(false);
+  };
+
+  const openGmail = () => {
+    window.open('https://mail.google.com', '_blank');
+  };
+
+  if (loadingUser) {
+    return <Loading />;
+  }
 
   return (
-    <>
-      <div className="md:hidden">
-        <Image
-          src="/examples/authentication-light.png"
-          width={1280}
-          height={843}
-          alt="Autentificare"
-          className="block dark:hidden"
-        />
-        <Image
-          src="/examples/authentication-dark.png"
-          width={1280}
-          height={843}
-          alt="Autentificare"
-          className="hidden dark:block"
-        />
-      </div>
-      <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <Link
-          href="/examples/authentication"
-          className={cn(
-            buttonVariants({ variant: "ghost" }),
-            "absolute right-4 top-4 md:right-8 md:top-8"
-          )}
-        >
-          Logare
+    <main>
+      <Toaster richColors position='top-right' />
+      <div className='flex justify-center items-center h-screen'>
+        <Link href="/" className="absolute top-8 left-8">
+          <Button variant="ghost">
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
         </Link>
-        <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
-          <div className="absolute inset-0 bg-zinc-900" />
-          <div className="relative z-20 flex items-center text-lg font-medium">
-            <Link href="/">
-              <Image src={Logo} alt="Logo" width={100} height={100} />
-            </Link>
-          </div>
-          <div className="relative z-20 mt-auto">
-            <blockquote className="space-y-2">
-              <p className="text-lg">
-                &ldquo;Această bibliotecă mi-a economisit nenumărate ore de muncă și
-                m-a ajutat să livrez design-uri uimitoare clienților mei mai repede ca
-                niciodată.&rdquo;
-              </p>
-              <footer className="text-sm">Sofia Davis</footer>
-            </blockquote>
-          </div>
-        </div>
-        <div className="lg:p-8">
-          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-            <div className="flex flex-col space-y-2 text-center">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                Creează un cont
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Introdu adresa de email mai jos pentru a-ți crea contul
-              </p>
+        <Link href="/signup" className="absolute top-8 right-8">
+          <Button variant="ghost">
+            <LogIn className="h-4 w-4 mr-2" />
+            Nu ai cont?
+          </Button>
+        </Link>
+        <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+          <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+            <Image priority quality={10} src={Logo} alt="AutoScout Logo" className="mx-auto mb-12" width={200} height={40} />
+            <h2 className="text-center text-2xl font-bold tracking-tight text-gray-900 mb-4">Logare</h2>
+            <p className="text-center text-sm text-gray-500">Logheaza-te cu unul din urmatoarele servicii</p>
+            <div className='flex flex-col gap-2 mt-6'>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOAuthLogin("google")}
+                disabled={loading}
+              >
+                <Image className="h-4 w-4 mr-2" src={Google} alt="Google Logo" />
+                Continua cu Google
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => handleOAuthLogin("twitter")}
+                disabled={loading}
+              >
+                <Image className="h-4 w-4 mr-2" src={Twitter} alt="Twitter Logo" />
+                Continua cu Twitter
+              </Button>
             </div>
-            <UserAuthForm />
-            <p className="px-8 text-center text-sm text-muted-foreground">
-              Făcând clic pe continuare, ești de acord cu{" "}
-              <Link
-                href="/terms"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                Termenii și Condițiile
-              </Link>{" "}
-              și{" "}
-              <Link
-                href="/privacy"
-                className="underline underline-offset-4 hover:text-primary"
-              >
-                Politica de Confidențialitate
-              </Link>
-              .
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">sau</span>
+              </div>
+            </div>
+            <form onSubmit={handleEmailLogin} className='flex flex-col mb-12'>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="john@doe.com"
+                value={email}
+                required
+                onChange={(e) => setEmail(e.target.value)}
+                className='mt-1 mb-4'
+              />
+              {isEmailSent ? (
+                <Button type="submit" className="w-full" disabled>
+                  Verifica-ti email-ul
+                </Button>
+              ) : (
+                <Button type="submit" className="w-full bg-[#007bff] text-white" disabled={loading}>
+                  {loading ? "Se trimite link-ul..." : "Trimite link de logare"}
+                </Button>
+              )}
+              {isEmailSent && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={openGmail}
+                >
+                  <div className="flex items-center justify-center mr-2.5">
+                    <Image className="h-5 w-5" src={GmailLogo} alt="Gmail Logo" />
+                  </div>
+                  Deschide Gmail
+                  <ExternalLink className="w-4 ml-2" />
+                </Button>
+              )}
+            </form>
+            <p className="mt-10 text-left text-xs opacity-60">
+              Prin logare, esti de acord cu <span className='hover:underline text-[#007bff] cursor-pointer'>Termenii si Conditiile</span> si <span className="hover:underline text-[#007bff] cursor-pointer">Politica de Confidentialitate</span>.
             </p>
           </div>
         </div>
       </div>
-    </>
-  )
+    </main>
+  );
 }

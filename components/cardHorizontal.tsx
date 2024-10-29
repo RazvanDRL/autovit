@@ -21,7 +21,7 @@ interface CardProps {
 
 export default function CardHorizontal({ listingId, id, title, price, engine_size, power, description, km, fuelType, year, location, date, className }: CardProps) {
     return (
-        <a href={`/a/${id}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
+        <a href={`/a/${listingId}`} className={cn("p-4 border border-gray-200 bg-white rounded-sm max-w-[1000px] cursor-pointer", className)}>
             <div className="flex items-start"> {/* Ensure items are aligned at the start */}
                 <div className="w-[240px] h-[180px] relative">
                     <Image

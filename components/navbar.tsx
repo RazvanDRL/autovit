@@ -104,8 +104,7 @@ export default function Navbar() {
     };
 
     return (
-        <div className="w-full top-0 left-0 right-0 z-50 bg-white shadow-sm">
-            <Toaster richColors position='top-center' />
+        <div className="w-full top-0 left-0 right-0 z-50 bg-white shadow-md border-b border-gray-200 sticky">
             <div className="container mx-auto flex justify-between items-center py-3 px-16 bg-inherit text-black">
                 <Link href="/">
                     <Image src={Logo} alt="Logo" width={100} height={100} />
@@ -211,8 +210,8 @@ export default function Navbar() {
                         </DropdownMenu>
                     </div>
                     <Link href="/adauga">
-                        <Button variant="outline" className="font-semibold text-primary py-3 px-5 flex items-center justify-center rounded-md group relative overflow-hidden hover:scale-105 transition-all duration-300">
-                            <Plus className="mr-2 h-5 w-5" /> Adaugă un anunț
+                        <Button variant="outline" className="font-semibold text-primary py-3 px-5 flex items-center justify-center rounded-md group relative overflow-hidden transition-all duration-300 hover:bg-primary hover:text-white transform hover:scale-105 hover:shadow-lg before:absolute before:inset-0 before:bg-primary/10 before:scale-x-0 hover:before:scale-x-100 before:transition-transform before:duration-300 before:origin-left">
+                            <Plus className="mr-2 h-5 w-5 transition-transform group-hover:rotate-90 duration-300" /> Adaugă un anunț
                         </Button>
                     </Link>
                 </div>

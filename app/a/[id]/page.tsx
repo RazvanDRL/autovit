@@ -16,7 +16,7 @@ import { ContactCard } from "@/components/contact";
 import { toast, Toaster } from "sonner";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X, Zap, Droplet, Car } from "lucide-react";
+import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X, Zap, Droplet, Car, ChevronLeft, Camera } from "lucide-react";
 import Link from "next/link";
 import { formatNumberWithSpace } from "@/lib/numberFormat";
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +25,7 @@ import { User as UserType } from "@supabase/supabase-js";
 import Loading from "@/components/loading";
 import Footer from "@/components/footer";
 import { useParams } from "next/navigation";
+
 type Ad = {
     id: string,
     brand: string,
@@ -140,7 +141,7 @@ export default function Page() {
     return (
         <div>
             <Navbar />
-            <div className="container mx-auto p-4 max-w-6xl">
+            <div className="mt-[8rem] container mx-auto p-4 max-w-6xl">
                 <Toaster richColors position='top-center' />
                 <div className="mb-6 flex justify-between items-center w-full">
                     <nav className="flex" aria-label="Breadcrumb">
@@ -189,43 +190,60 @@ export default function Page() {
                 <div className="flex flex-col">
                     <div className="flex justify-between">
                         <div>
-                            <div ref={carouselRef} className="aspect-[4/3] w-[48rem] h-[36rem] bg-gray-100 flex justify-center items-center relative rounded-sm overflow-hidden">
-                                {ad.photos && ad.photos.length > 0 ? (
-                                    <>
-                                        <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
-                                            <CarouselContent>
-                                                {ad.photos.map((photo, index) => (
-                                                    <CarouselItem key={index}>
-                                                        <Card>
-                                                            <CardContent className="p-0 aspect-[4/3] relative">
-                                                                <Image
-                                                                    src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`}
-                                                                    alt={`${ad.brand} ${ad.model}`}
-                                                                    layout="fill"
-                                                                    objectFit="cover"
-                                                                    loading="eager"
-                                                                    fetchPriority="high"
-                                                                    priority
-                                                                    className="rounded-sm"
-                                                                />
-                                                            </CardContent>
-                                                        </Card>
-                                                    </CarouselItem>
-                                                ))}
-                                            </CarouselContent>
-                                            <CarouselPrevious onClick={handlePrevious} className="bg-white text-black hover:bg-gray-100 absolute opacity-80 left-4 top-1/2 transform -translate-y-1/2" />
-                                            <CarouselNext onClick={handleNext} className="bg-white text-black hover:bg-gray-100 absolute opacity-80 right-4 top-1/2 transform -translate-y-1/2" />
-                                        </Carousel>
-                                        <div className="text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded">
-                                            {currentPhotoIndex + 1} / {ad.photos.length}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <p>No photos available</p>
-                                )}
+                            <div className="rounded-sm flex items-center gap-4 bg-gray-200/50 justify-center max-w-[48rem] relative">
+                                <Button
+                                    variant="ghost"
+                                    onClick={handlePrevious}
+                                    className="bg-white text-black hover:bg-gray-100"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+
+                                <div ref={carouselRef} className="aspect-[4/3] w-[36rem] h-[27rem] flex justify-center items-center overflow-hidden cursor-pointer">
+                                    {ad.photos && ad.photos.length > 0 ? (
+                                        <>
+                                            <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
+                                                <CarouselContent>
+                                                    {ad.photos.map((photo, index) => (
+                                                        <CarouselItem key={index}>
+                                                            <Card>
+                                                                <CardContent className="p-0 aspect-[4/3] relative">
+                                                                    <Image
+                                                                        src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${params.id}/${photo}.webp`}
+                                                                        alt={`${ad.brand} ${ad.model}`}
+                                                                        layout="fill"
+                                                                        objectFit="cover"
+                                                                        loading="eager"
+                                                                        fetchPriority="high"
+                                                                        priority
+                                                                        className=""
+                                                                    />
+                                                                </CardContent>
+                                                            </Card>
+                                                        </CarouselItem>
+                                                    ))}
+                                                </CarouselContent>
+                                            </Carousel>
+                                        </>
+                                    ) : (
+                                        <p>No photos available</p>
+                                    )}
+                                </div>
+                                <div className="flex items-center text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 opacity-90 text-white px-2 py-1 rounded">
+                                    <Camera className="w-4 h-4 mr-1.5" />
+                                    {currentPhotoIndex + 1} / {ad.photos.length}
+                                </div>
+
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleNext}
+                                    className="bg-white text-black hover:bg-gray-100"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
                             </div>
                             {ad.photos && ad.photos.length > 0 && (
-                                <div className="mt-4">
+                                <div className="mt-4 w-[48rem]">
                                     <Carousel className="w-full" opts={{ loop: true, align: "start" }} setApi={setThumbnailApi}>
                                         <CarouselContent>
                                             {ad.photos.map((photo, index) => (
@@ -239,12 +257,14 @@ export default function Page() {
                                                         }}
                                                     >
                                                         <Image
-                                                            src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${user.id}/${photo}.webp`}
+                                                            src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${params.id}/${photo}-thumbnail.webp`}
                                                             alt={`${ad.brand} ${ad.model} thumbnail`}
                                                             layout="fill"
                                                             objectFit="cover"
                                                             className="rounded-sm"
-                                                            loading="lazy"
+                                                            loading="eager"
+                                                            fetchPriority="high"
+                                                            priority
                                                             quality={0}
                                                         />
                                                     </div>

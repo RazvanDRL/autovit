@@ -60,6 +60,7 @@ const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_LENGTH = 30;
 
 const formSchema = z.object({
+    id: z.string(),
     user_id: z.string(),
     vin: z.string().min(16).max(17).optional(),
     brand: z.string().min(2).max(50),
@@ -163,6 +164,7 @@ export default function CarAdForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            id: '',
             user_id: user?.id || '',
             vin: '',
             brand: '',
@@ -184,18 +186,19 @@ export default function CarAdForm() {
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         // upload data to supabase
+        console.log(data);
         const { data: anuntData, error: anuntError } = await supabase
-            .from('anunt')
+            .from('listings')
             .insert([{ ...data, user_id: user?.id }])
-            .select('id'); // Ensure we get the ID of the inserted ad
 
         if (anuntError) {
             toast.error('Eroare la adaugarea anuntului!');
+            console.error(anuntError);
         } else {
             toast.success('Anuntul a fost adaugat cu succes! Veti fi redirectat la pagina anuntului.');
             await delay(2000);
-            if (anuntData && anuntData.length > 0 && anuntData[0].id) {
-                router.push(`/a/${anuntData[0].id}`);
+            if (data.id) {
+                router.push(`/a/${data.id}`);
             }
         }
     }
@@ -561,6 +564,8 @@ export default function CarAdForm() {
                                                                 setIsUploading(true);
                                                                 const listingId = crypto.randomUUID();
                                                                 setListingId(listingId);
+                                                                form.setValue("id", listingId);
+                                                                console.log(listingId);
 
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {

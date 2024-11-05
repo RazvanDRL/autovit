@@ -207,14 +207,18 @@ export default function Page() {
                 </div>
                 {/* add the price and title here */}
                 <Separator className="mb-6" />
-                <div className="flex justify-between mb-6">
+                <div className="flex flex-col sm:flex-row justify-between mb-4 sm:mb-6 gap-2 sm:gap-0">
                     <div className="flex flex-col">
-                        <h1 className="text-3xl font-bold text-gray-900">{ad.brand}{" "}{ad.model}{" - "}{ad.short_description}</h1>
-                        <p className="text-xs opacity-50 mt-1">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 break-words">
+                            {ad.brand}{" "}{ad.model}{" - "}{ad.short_description}
+                        </h1>
+                        <p className="text-[11px] sm:text-xs opacity-50 mt-0.5 sm:mt-1">
                             Postat cu {ad.created_at ? formatTimeAgo(ad.created_at) : ''}
                         </p>
                     </div>
-                    <p className="text-3xl font-semibold mt-2 text-[#EB2126]">{formatNumberWithSpace(ad.price)} EUR</p>
+                    <p className="text-xl sm:text-2xl md:text-3xl font-semibold sm:mt-2 text-[#EB2126] whitespace-nowrap">
+                        {formatNumberWithSpace(ad.price)} EUR
+                    </p>
                 </div>
                 <div className="flex flex-col">
                     <div className="flex justify-between">

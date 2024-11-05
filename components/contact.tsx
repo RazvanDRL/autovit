@@ -59,7 +59,7 @@ export const ContactCard = (props: ContactCardProps) => {
 
     return (
         <div className="p-4 bg-white border rounded-lg shadow-sm lg:rounded-lg lg:shadow-sm lg:border lg:p-4 fixed-bottom">
-            <div className="flex items-center justify-between">
+            <div className="hidden lg:flex items-center justify-between">
                 <div>
                     <h3 className="text-xs opacity-50">Postat de</h3>
                     <Link className="hover:text-red-600" href={`/profile/${user?.id}`}>{user?.name}</Link>

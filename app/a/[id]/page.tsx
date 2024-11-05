@@ -170,7 +170,7 @@ export default function Page() {
     return (
         <div>
             <Navbar />
-            <div className="mt-[8rem] container mx-auto p-4 max-w-6xl">
+            <div className="mt-[8rem] container overflow-x-hidden mx-auto p-4 max-w-6xl">
                 <Toaster richColors position='top-center' />
                 <div className="mb-6 flex justify-between items-center w-full">
                     <nav className="flex" aria-label="Breadcrumb">
@@ -219,7 +219,7 @@ export default function Page() {
                 <div className="flex flex-col">
                     <div className="flex justify-between">
                         <div>
-                            <div className="rounded-sm flex items-center gap-4 justify-center w-full max-w-[48rem] relative overflow-hidden md:bg-gray-200/50 bg-transparent">
+                            <div className="rounded-sm flex items-center gap-4 justify-center w-full relative overflow-hidden md:bg-gray-200/50 bg-transparent">
                                 <Button
                                     variant="ghost"
                                     onClick={handlePrevious}
@@ -228,7 +228,7 @@ export default function Page() {
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
 
-                                <div ref={carouselRef} className="aspect-[4/3] w-full h-full max-w-[36rem] lg:max-w-[36rem] md:max-w-[30rem] sm:max-w-[24rem] max-h-[27rem] lg:max-h-[27rem] md:max-h-[22.5rem] sm:max-h-[18rem] flex justify-center items-center overflow-hidden cursor-pointer">
+                                <div ref={carouselRef} className="w-full aspect-[4/3] max-w-[100vw] md:max-w-[36rem] flex justify-center items-center overflow-hidden cursor-pointer">
                                     {ad.photos && ad.photos.length > 0 ? (
                                         <>
                                             <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
@@ -290,13 +290,22 @@ export default function Page() {
                                 </Button>
                             </div>
                             {ad.photos && ad.photos.length > 0 && (
-                                <div className="mt-4 w-[48rem]">
-                                    <Carousel className="w-full" opts={{ loop: true, align: "start" }} setApi={setThumbnailApi}>
-                                        <CarouselContent>
+                                <div className="mt-4 w-full max-w-full overflow-hidden px-2 sm:px-4 md:px-0">
+                                    <Carousel
+                                        className="w-full"
+                                        opts={{
+                                            loop: true,
+                                            align: "start",
+                                            slidesToScroll: 1
+                                        }}
+                                        setApi={setThumbnailApi}
+                                    >
+                                        <CarouselContent className="-ml-2 sm:-ml-4">
                                             {ad.photos.map((photo, index) => (
-                                                <CarouselItem key={index} className="pl-4" style={{ flex: '0 0 auto', width: `${100 / Math.min(ad.photos.length, 8) + 1.2}%` }}>
+                                                <CarouselItem key={index} className="pl-2 sm:pl-4 basis-1/5 xs:basis-1/6 sm:basis-1/6 md:basis-1/8">
                                                     <div
-                                                        className={`rounded-md aspect-[4/3] relative cursor-pointer ${index === currentPhotoIndex ? 'border-2 border-blue-500' : ''}`}
+                                                        className={`rounded-md aspect-[4/3] relative cursor-pointer hover:opacity-90 transition-opacity
+                                                            ${index === currentPhotoIndex ? 'border-2 border-blue-500' : 'border-1 border-gray-200'}`}
                                                         onClick={() => {
                                                             setCurrentPhotoIndex(index);
                                                             api?.scrollTo(index);
@@ -354,7 +363,7 @@ export default function Page() {
                                 <Separator className="my-8" />
                             </div>
                         </div>
-                        <div className="flex-shrink-0 lg:block hidden">
+                        <div className="pl-8 flex-shrink-0 lg:block hidden">
                             <ContactCard phoneNumber={"0770429755"} />
                         </div>
                         <div className="fixed bottom-0 left-0 right-0 lg:hidden">

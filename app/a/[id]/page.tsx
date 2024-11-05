@@ -219,19 +219,33 @@ export default function Page() {
                 <div className="flex flex-col">
                     <div className="flex justify-between">
                         <div>
-                            <div className="rounded-sm flex items-center gap-4 bg-gray-200/50 justify-center max-w-[48rem] relative">
+                            <div className="rounded-sm flex items-center gap-4 justify-center w-full max-w-[48rem] relative overflow-hidden md:bg-gray-200/50 bg-transparent">
                                 <Button
                                     variant="ghost"
                                     onClick={handlePrevious}
-                                    className="bg-black/80 text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
+                                    className="hidden md:flex bg-black/80 hover:text-white text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 items-center justify-center"
                                 >
                                     <ChevronLeft className="h-5 w-5" />
                                 </Button>
 
-                                <div ref={carouselRef} className="aspect-[4/3] w-[36rem] h-[27rem] flex justify-center items-center overflow-hidden cursor-pointer">
+                                <div ref={carouselRef} className="aspect-[4/3] w-full h-full max-w-[36rem] lg:max-w-[36rem] md:max-w-[30rem] sm:max-w-[24rem] max-h-[27rem] lg:max-h-[27rem] md:max-h-[22.5rem] sm:max-h-[18rem] flex justify-center items-center overflow-hidden cursor-pointer">
                                     {ad.photos && ad.photos.length > 0 ? (
                                         <>
                                             <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
+                                                <Button
+                                                    variant="ghost"
+                                                    onClick={handlePrevious}
+                                                    className="md:hidden absolute z-[999] top-1/2 -translate-y-1/2 left-2 bg-black/80 hover:text-white text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
+                                                >
+                                                    <ChevronLeft className="h-5 w-5" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    onClick={handleNext}
+                                                    className="md:hidden absolute z-[999] top-1/2 -translate-y-1/2 right-2 bg-black/80 hover:text-white text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
+                                                >
+                                                    <ChevronRight className="h-5 w-5" />
+                                                </Button>
                                                 <CarouselContent>
                                                     {ad.photos.map((photo, index) => (
                                                         <CarouselItem key={index}>
@@ -252,13 +266,17 @@ export default function Page() {
                                                         </CarouselItem>
                                                     ))}
                                                 </CarouselContent>
+                                                <div className="flex md:hidden items-center text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 opacity-90 text-white px-2 py-1 rounded">
+                                                    <Camera className="w-4 h-4 mr-1.5" />
+                                                    {currentPhotoIndex + 1} / {ad.photos.length}
+                                                </div>
                                             </Carousel>
                                         </>
                                     ) : (
                                         <p>No photos available</p>
                                     )}
                                 </div>
-                                <div className="flex items-center text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 opacity-90 text-white px-2 py-1 rounded">
+                                <div className="hidden md:flex items-center text-xs absolute bottom-2 right-2 bg-black bg-opacity-50 opacity-90 text-white px-2 py-1 rounded">
                                     <Camera className="w-4 h-4 mr-1.5" />
                                     {currentPhotoIndex + 1} / {ad.photos.length}
                                 </div>
@@ -266,7 +284,7 @@ export default function Page() {
                                 <Button
                                     variant="ghost"
                                     onClick={handleNext}
-                                    className="bg-black/80 text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
+                                    className="hidden md:flex bg-black/80 hover:text-white text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 items-center justify-center"
                                 >
                                     <ChevronRight className="h-5 w-5" />
                                 </Button>

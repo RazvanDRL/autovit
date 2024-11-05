@@ -1,3 +1,4 @@
+import { formatNumberWithSpace } from "@/lib/numberFormat"
 import { Heart, Calendar, MapPin, Fuel, Gauge } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
@@ -92,7 +93,7 @@ export default function Card({
                     {brand} {model}
                 </h3>
                 <p className={`font-bold mt-1 ${config.textBase} text-primary`}>
-                    {price.toLocaleString()} RON
+                    {formatNumberWithSpace(price)} EUR
                 </p>
                 <div className={`mt-2 ${config.textBase} text-primary/80`}>
                     <div className="flex items-center">
@@ -101,7 +102,7 @@ export default function Card({
                     </div>
                     <div className="flex items-center mt-1">
                         <Gauge size={config.iconSize} className="mr-1" />
-                        <span>{km.toLocaleString()} km</span>
+                        <span>{formatNumberWithSpace(km)} km</span>
                     </div>
                     <div className="flex items-center mt-1">
                         <Fuel size={config.iconSize} className="mr-1" />

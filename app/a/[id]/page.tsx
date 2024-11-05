@@ -16,7 +16,7 @@ import { ContactCard } from "@/components/contact";
 import { toast, Toaster } from "sonner";
 import Navbar from "@/components/navbar";
 import { Button } from "@/components/ui/button";
-import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X, Zap, Droplet, Car, ChevronLeft, Camera } from "lucide-react";
+import { Share2, Heart, ChevronRight, Calendar, Gauge, Fuel, Power, MapPin, Maximize2, X, Zap, Droplet, Car, ChevronLeft, Camera, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { formatNumberWithSpace } from "@/lib/numberFormat";
 import { Separator } from "@/components/ui/separator";
@@ -53,6 +53,35 @@ export default function Page() {
     const [isFavourite, setIsFavourite] = useState(false);
     const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const stats = [
+        {
+            icon: <Gauge className="w-8 h-8 mb-1 text-gray-500" />,
+            label: 'Km',
+            value: formatNumberWithSpace(Number(ad?.km)) + ' km'
+        },
+        {
+            icon: <Fuel className="w-8 h-8 mb-1 text-gray-500" />,
+            label: 'Combustibil',
+            value: ad?.fuel_type
+        },
+        {
+            icon: <Zap className="w-8 h-8 mb-1 text-gray-500" />,
+            label: 'Putere',
+            value: formatNumberWithSpace(Number(ad?.power)) + ' CP'
+        },
+        {
+            icon: <Car className="w-8 h-8 mb-1 text-gray-500" />,
+            label: 'Capacitate',
+            value: <>{formatNumberWithSpace(Number(ad?.engine_size))} cm<sup>3</sup></>
+        },
+        {
+            icon: <Calendar className="w-8 h-8 mb-1 text-gray-500" />,
+            label: 'An fabricație',
+            value: ad?.year
+        }
+    ]
 
     useEffect(() => {
         async function fetchAd() {
@@ -148,7 +177,7 @@ export default function Page() {
                         <ol className="inline-flex items-center space-x-1 md:space-x-3">
                             <li className="inline-flex items-center">
                                 <Link href="/" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
-                                    Home
+                                    Acasa
                                 </Link>
                             </li>
                             <li>
@@ -194,9 +223,9 @@ export default function Page() {
                                 <Button
                                     variant="ghost"
                                     onClick={handlePrevious}
-                                    className="bg-white text-black hover:bg-gray-100"
+                                    className="bg-black/80 text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
                                 >
-                                    <ChevronLeft className="h-4 w-4" />
+                                    <ChevronLeft className="h-5 w-5" />
                                 </Button>
 
                                 <div ref={carouselRef} className="aspect-[4/3] w-[36rem] h-[27rem] flex justify-center items-center overflow-hidden cursor-pointer">
@@ -237,9 +266,9 @@ export default function Page() {
                                 <Button
                                     variant="ghost"
                                     onClick={handleNext}
-                                    className="bg-white text-black hover:bg-gray-100"
+                                    className="bg-black/80 text-white rounded-full hover:bg-black/75 w-10 h-10 p-0 flex items-center justify-center"
                                 >
-                                    <ChevronRight className="h-4 w-4" />
+                                    <ChevronRight className="h-5 w-5" />
                                 </Button>
                             </div>
                             {ad.photos && ad.photos.length > 0 && (
@@ -277,47 +306,40 @@ export default function Page() {
                             <Separator className="my-8" />
                             <div>
                                 {/* Stats */}
-                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-4">
-                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
-                                        <Gauge className="w-8 h-8 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500 mb-1.5">Km</p>
-                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.km)} km</p>
-                                    </div>
-                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
-                                        <Fuel className="w-8 h-8 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500 mb-1.5">Combustibil</p>
-                                        <p className="text-sm font-bold text-gray-900">{ad.fuel_type}</p>
-                                    </div>
-                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
-                                        <Zap className="w-8 h-8 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500 mb-1.5">Putere</p>
-                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.power)} CP</p>
-                                    </div>
-                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
-                                        <Car className="w-8 h-8 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500 mb-1.5">Capacitate</p>
-                                        <p className="text-sm font-bold text-gray-900">{formatNumberWithSpace(ad.engine_size)} cm<sup>3</sup></p>
-                                    </div>
-                                    <div className="bg-white shadow-md border border-gray-200 p-3 rounded-lg flex flex-col items-center justify-center h-32">
-                                        <Calendar className="w-8 h-8 mb-1 text-gray-500" />
-                                        <p className="text-xs text-gray-500 mb-1.5">An fabricație</p>
-                                        <p className="text-sm font-bold text-gray-900">{ad.year}</p>
-                                    </div>
+                                <div className="flex flex-wrap md:grid md:grid-cols-5 gap-2 justify-between mt-4 px-4 sm:px-0">
+                                    {stats.map((stat, index) => (
+                                        <div key={index} className="bg-white md:shadow-md md:border md:border-gray-200 py-3 md:px-6 rounded-lg flex flex-col items-center justify-center">
+                                            {stat.icon}
+                                            <p className="text-[10px] md:text-xs text-gray-500">{stat.label}</p>
+                                            <p className="text-xs md:text-sm font-bold text-gray-900">{stat.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                                 <Separator className="my-8" />
                                 {/* Description */}
                                 <div>
                                     <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
                                     <div
-                                        className="font-[350] opacity-90"
+                                        className={`font-[350] opacity-90 ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
                                         dangerouslySetInnerHTML={{
                                             __html: ad.description.replace(/<p>\s*<\/p>/g, '<br>')
                                         }}
                                     />
+                                    <button
+                                        onClick={() => setIsExpanded(!isExpanded)}
+                                        className="text-blue-500 font-semibold hover:text-blue-500/80 flex items-center"
+                                    >
+                                        {isExpanded ? "Vezi mai puțin" : "Vezi mai mult"}
+                                        {isExpanded ? <ChevronUp className="w-5 h-5 ml-1" /> : <ChevronDown className="w-5 h-5 ml-1" />}
+                                    </button>
                                 </div>
+                                <Separator className="my-8" />
                             </div>
                         </div>
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 lg:block hidden">
+                            <ContactCard phoneNumber={"0770429755"} />
+                        </div>
+                        <div className="fixed bottom-0 left-0 right-0 lg:hidden">
                             <ContactCard phoneNumber={"0770429755"} />
                         </div>
                     </div>

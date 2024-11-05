@@ -58,7 +58,7 @@ export const ContactCard = (props: ContactCardProps) => {
     };
 
     return (
-        <div className="p-4 border rounded-lg shadow-sm">
+        <div className="p-4 bg-white border rounded-lg shadow-sm lg:rounded-lg lg:shadow-sm lg:border lg:p-4 fixed-bottom">
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="text-xs opacity-50">Postat de</h3>
@@ -80,8 +80,8 @@ export const ContactCard = (props: ContactCardProps) => {
                 <Image src={"/image.png"} alt="Avatar" height={50} width={50} className="" />
             </div>
 
-            <div className="space-y-4">
-                <div className="mt-16">
+            <div className="space-y-2 lg:space-y-4">
+                <div className="mt-4 lg:mt-16">
                     {showPhone ? (
                         <Link href={`tel:${phoneNumber}`}>
                             <Button variant="outline" className="w-full flex items-center">
@@ -94,11 +94,11 @@ export const ContactCard = (props: ContactCardProps) => {
                         </Button>
                     )}
                 </div>
-                <div className="flex space-x-4">
-                    <Button onClick={handleWhatsApp} className="bg-green-500 hover:bg-green-600 hover:scale-105 transition-all duration-300">
+                <div className="flex space-x-2 lg:space-x-4">
+                    <Button onClick={handleWhatsApp} className="flex-1 bg-green-500 hover:bg-green-600 hover:scale-105 transition-all duration-300">
                         <Image src={WhatsAppLogo} alt="WhatsApp" height={20} width={20} className="mr-2" /> WhatsApp
                     </Button>
-                    <Button onClick={handleInHouseChat} className="bg-[#EB2126] hover:bg-[#EB2126]/90 hover:scale-105 transition-all duration-300">
+                    <Button onClick={handleInHouseChat} className="flex-1 bg-[#EB2126] hover:bg-[#EB2126]/90 hover:scale-105 transition-all duration-300">
                         <MessageSquareMore className="h-5 w-4 mr-2" /> Contactează
                     </Button>
                 </div>

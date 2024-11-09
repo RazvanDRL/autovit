@@ -6,8 +6,6 @@ import {
     Carousel,
     CarouselContent,
     CarouselItem,
-    CarouselNext,
-    CarouselPrevious,
     type CarouselApi,
 } from "@/components/ui/carousel"
 import { Card, CardContent } from "@/components/ui/card"
@@ -163,6 +161,21 @@ export default function Page() {
     useKeyPress("ArrowRight", handleNext);
     useKeyPress("Escape", () => setIsOverlayOpen(false));
 
+    const handlePhotoChange = (index: number) => {
+        setCurrentPhotoIndex(index);
+        api?.scrollTo(index);
+    };
+
+    useEffect(() => {
+        if (!api) return;
+
+        api.on("select", () => {
+            const selectedIndex = api.selectedScrollSnap();
+            setCurrentPhotoIndex(selectedIndex);
+            thumbnailApi?.scrollTo(selectedIndex);
+        });
+    }, [api, thumbnailApi]);
+
     if (!ad || !user) {
         return <Loading />;
     }
@@ -235,7 +248,9 @@ export default function Page() {
                                 <div ref={carouselRef} className="w-full aspect-[4/3] max-w-[100vw] md:max-w-[36rem] flex justify-center items-center overflow-hidden cursor-pointer">
                                     {ad.photos && ad.photos.length > 0 ? (
                                         <>
-                                            <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi}>
+                                            <Carousel className="aspect-[4/3] w-full h-full" opts={{ loop: true }} setApi={setApi} onChangeCapture={() => {
+                                                console.log('changed')
+                                            }} >
                                                 <Button
                                                     variant="ghost"
                                                     onClick={handlePrevious}
@@ -311,9 +326,7 @@ export default function Page() {
                                                         className={`rounded-md aspect-[4/3] relative cursor-pointer hover:opacity-90 transition-opacity
                                                             ${index === currentPhotoIndex ? 'border-2 border-blue-500' : 'border-1 border-gray-200'}`}
                                                         onClick={() => {
-                                                            setCurrentPhotoIndex(index);
-                                                            api?.scrollTo(index);
-                                                            thumbnailApi?.scrollTo(index);
+                                                            handlePhotoChange(index);
                                                         }}
                                                     >
                                                         <Image

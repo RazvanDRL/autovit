@@ -23,23 +23,8 @@ import { User as UserType } from "@supabase/supabase-js";
 import Loading from "@/components/loading";
 import Footer from "@/components/footer";
 import { useParams } from "next/navigation";
-
-type Ad = {
-    id: string,
-    brand: string,
-    model: string,
-    price: number,
-    engine_size: number,
-    power: number,
-    km: number,
-    fuel_type: string,
-    year: number,
-    location: string,
-    description: string,
-    short_description: string,
-    created_at?: string,
-    photos: string[]
-}
+import Breadcrumb from "@/components/breadcrumb";
+import { Ad } from "@/types/schema";
 
 export default function Page() {
     const params = useParams<{ id: string }>();
@@ -49,7 +34,6 @@ export default function Page() {
     const [api, setApi] = useState<CarouselApi>();
     const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
     const [isFavourite, setIsFavourite] = useState(false);
-    const [isOverlayOpen, setIsOverlayOpen] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
 
@@ -153,13 +137,8 @@ export default function Page() {
         }
     };
 
-    const toggleOverlay = () => {
-        setIsOverlayOpen(!isOverlayOpen);
-    };
-
     useKeyPress("ArrowLeft", handlePrevious);
     useKeyPress("ArrowRight", handleNext);
-    useKeyPress("Escape", () => setIsOverlayOpen(false));
 
     const handlePhotoChange = (index: number) => {
         setCurrentPhotoIndex(index);
@@ -176,7 +155,7 @@ export default function Page() {
         });
     }, [api, thumbnailApi]);
 
-    if (!ad || !user) {
+    if (!ad) {
         return <Loading />;
     }
 
@@ -186,29 +165,7 @@ export default function Page() {
             <div className="mt-[8rem] container overflow-x-hidden mx-auto p-4 max-w-6xl">
                 <Toaster richColors position='top-center' />
                 <div className="mb-6 flex justify-between items-center w-full">
-                    <nav className="flex" aria-label="Breadcrumb">
-                        <ol className="inline-flex items-center space-x-1 md:space-x-3">
-                            <li className="inline-flex items-center">
-                                <Link href="/" className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
-                                    Acasa
-                                </Link>
-                            </li>
-                            <li>
-                                <div className="flex items-center">
-                                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                                    <Link href="/cars" className="ml-1 text-sm font-medium text-gray-700 hover:text-blue-600 md:ml-2">
-                                        Cars
-                                    </Link>
-                                </div>
-                            </li>
-                            <li aria-current="page">
-                                <div className="flex items-center">
-                                    <ChevronRight className="w-4 h-4 text-gray-400" />
-                                    <span className="ml-1 text-sm font-medium text-gray-500 md:ml-2">{ad.brand} {ad.model}</span>
-                                </div>
-                            </li>
-                        </ol>
-                    </nav>
+                    <Breadcrumb brand={ad.brand} model={ad.model} />
                     <div className="flex space-x-2">
                         <Button onClick={handleFavorite} variant="ghost" size="icon" className="bg-white">
                             <Heart className={`h-5 w-5 ${isFavourite ? 'fill-current text-red-500' : ''}`} />
@@ -381,10 +338,10 @@ export default function Page() {
                             </div>
                         </div>
                         <div className="pl-8 flex-shrink-0 lg:block hidden">
-                            <ContactCard phoneNumber={"0770429755"} />
+                            <ContactCard user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
                         </div>
                         <div className="fixed bottom-0 left-0 right-0 lg:hidden">
-                            <ContactCard phoneNumber={"0770429755"} />
+                            <ContactCard user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
                         </div>
                     </div>
                 </div>

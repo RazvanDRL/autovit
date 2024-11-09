@@ -1,55 +1,28 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/lib/supabaseClient';
 import Link from 'next/link';
 import WhatsAppLogo from '@/public/logos/whatsapp.svg';
 import Image from 'next/image';
 import { MessageSquareMore, Phone, Building2, User } from 'lucide-react';
-import { Separator } from '@radix-ui/react-separator';
 
 interface ContactCardProps {
-    phoneNumber: string;
-}
-
-interface User {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    is_dealer: boolean;
+    user_id: string;
+    user_phone: string;
+    user_full_name: string;
+    is_company: boolean;
 }
 
 export const ContactCard = (props: ContactCardProps) => {
     const [showPhone, setShowPhone] = useState(false);
-    const [user, setUser] = useState<User | null>(null);
-    const { phoneNumber } = props;
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            const { data, error } = await supabase.auth.getUser();
-            if (error) {
-                console.error('Error fetching user:', error);
-            } else {
-                const { data: userData, error: userError } = await supabase.from('profiles').select('*').eq('id', data.user.id);
-                if (userError) {
-                    console.error('Error fetching user:', userError);
-                } else {
-                    setUser(userData[0]);
-                    console.log('User:', userData[0]);
-                }
-            }
-        };
-
-        fetchUser();
-    }, []);
+    const { user_id, user_phone, user_full_name, is_company } = props;
 
     const handleRevealPhone = () => {
         setShowPhone(true);
     };
 
     const handleWhatsApp = () => {
-        window.open(`https://wa.me/${phoneNumber.replace(/\D/g, '')}`, '_blank');
+        window.open(`https://wa.me/${user_phone.replace(/\D/g, '')}`, '_blank');
     };
 
     const handleInHouseChat = () => {
@@ -62,9 +35,9 @@ export const ContactCard = (props: ContactCardProps) => {
             <div className="hidden lg:flex items-center justify-between">
                 <div>
                     <h3 className="text-xs opacity-50">Postat de</h3>
-                    <Link className="hover:text-red-600" href={`/profile/${user?.id}`}>{user?.name}</Link>
+                    <Link className="hover:text-red-600" href={`/profile/${user_id}`}>{user_full_name}</Link>
                     <div className="flex items-center mt-1">
-                        {user?.is_dealer ? (
+                        {is_company ? (
                             <>
                                 <Building2 className="h-4 w-4 mr-1 text-blue-500" />
                                 <span className="text-sm text-red-500">Dealer</span>
@@ -83,9 +56,9 @@ export const ContactCard = (props: ContactCardProps) => {
             <div className="space-y-2 lg:space-y-4">
                 <div className="mt-4 lg:mt-16">
                     {showPhone ? (
-                        <Link href={`tel:${phoneNumber}`}>
+                        <Link href={`tel:${user_phone}`}>
                             <Button variant="outline" className="w-full flex items-center">
-                                <Phone className="mr-2 h-4 w-4" /> {phoneNumber}
+                                <Phone className="mr-2 h-4 w-4" /> {user_phone}
                             </Button>
                         </Link>
                     ) : (

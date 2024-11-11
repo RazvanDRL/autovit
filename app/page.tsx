@@ -1,24 +1,8 @@
 "use client";
 import Navbar from '@/components/navbar';
-import React, { useState, useRef, useEffect } from 'react';
-import { Check, ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
-import { ButtonDropdown } from '@/components/ui/buttonDropdown';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
+import DropdownSelect from '@/components/dropdownSelect';
 import Card from '@/components/card';
 import { supabase } from '@/lib/supabaseClient';
 import { carBrands } from '@/lib/carBrands';
@@ -53,72 +37,6 @@ type Ad = {
   km: number;
   fuelType: string;
 }
-
-const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
-  options: { value: string; label: string }[];
-  placeholder: string;
-  value: string;
-  onChange: (value: string) => void;
-  className: string;
-  disabled?: boolean;
-}) => {
-  const [open, setOpen] = useState(false);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
-  const [popoverWidth, setPopoverWidth] = useState<string>("auto");
-
-  useEffect(() => {
-    if (buttonRef.current) {
-      setPopoverWidth(`${buttonRef.current.offsetWidth}px`);
-    }
-  }, [open]);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <ButtonDropdown
-          ref={buttonRef}
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("w-full text-md justify-between bg-[#EBECEF] border-[#EBECEF] rounded-sm font-[400]", className)}
-          disabled={disabled}
-        >
-          {options.find(option => option.value === value)?.label || placeholder}
-          <ChevronDown className="ml-2 h-8 w-8 shrink-0" />
-        </ButtonDropdown>
-      </PopoverTrigger>
-      <PopoverContent className="p-0" style={{ width: popoverWidth }}>
-        <Command>
-          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
-          <CommandList>
-            <CommandEmpty>No {placeholder.toLowerCase()} found.</CommandEmpty>
-            <CommandGroup>
-              {options.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-};
-
 export default function Home() {
   const router = useRouter();
   const [brand, setBrand] = useState("");

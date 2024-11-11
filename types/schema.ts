@@ -20,7 +20,7 @@ export type Ad = {
     location: string,
     description: string,
     short_description: string,
-    created_at?: string,
+    created_at: string,
     photos: string[],
     user_full_name: string,
     user_phone: string,

@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 
 interface BreadcrumbProps {
     brand: string;
-    model: string;
+    model?: string;
 }
 
 export default function Breadcrumb({ brand, model }: BreadcrumbProps) {
@@ -24,14 +24,16 @@ export default function Breadcrumb({ brand, model }: BreadcrumbProps) {
                         </Link>
                     </div>
                 </li>
-                <li aria-current="page">
-                    <div className="flex items-center">
-                        <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link href={`/${brand.toLowerCase()}/${model.toLowerCase()}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
-                            {model}
-                        </Link>
-                    </div>
-                </li>
+                {model && (
+                    <li aria-current="page">
+                        <div className="flex items-center">
+                            <ChevronRight className="w-4 h-4 text-gray-400" />
+                            <Link href={`/${brand.toLowerCase()}/${model.toLowerCase()}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
+                                {model}
+                            </Link>
+                        </div>
+                    </li>
+                )}
             </ol>
         </nav>
     );

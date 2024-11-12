@@ -2,6 +2,7 @@ import { formatNumberWithSpace } from "@/lib/numberFormat"
 import { Heart, Calendar, MapPin, Fuel, Gauge } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 interface CardProps {
     id: string
@@ -15,6 +16,8 @@ interface CardProps {
     year: number
     km: number
     fuelType: string
+    isFavorite?: boolean
+    onFavoriteClick?: (e: React.MouseEvent, id: string) => void
 }
 
 export default function Card({
@@ -29,6 +32,8 @@ export default function Card({
     year,
     km,
     fuelType,
+    isFavorite = false,
+    onFavoriteClick,
 }: CardProps) {
     const sizeConfig = {
         small: {
@@ -77,12 +82,23 @@ export default function Card({
                     quality={50}
                 />
                 <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        if (onFavoriteClick) {
+                            onFavoriteClick(e, id);
+                        }
+                    }}
                     className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white transition-colors duration-200"
-                    aria-label="Add to favorites"
+                    aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 >
                     <Heart
                         size={config.heartSize}
-                        className="text-primary hover:text-red-500 transition-colors duration-200"
+                        className={cn(
+                            "transition-colors duration-200",
+                            isFavorite 
+                                ? "fill-red-500 text-red-500" 
+                                : "text-primary hover:text-red-500"
+                        )}
                     />
                 </button>
             </div>

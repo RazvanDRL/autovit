@@ -11,6 +11,8 @@ import { years } from '@/lib/years';
 import { colors } from '@/lib/colors';
 import { useRouter } from 'next/navigation';
 import Loading from '@/components/loading';
+import { toast, Toaster } from 'sonner';
+import { User as UserType } from '@supabase/supabase-js';
 
 const fuelTypes = [
   { value: "Petrol", label: "Petrol" },
@@ -37,6 +39,7 @@ type Ad = {
   km: number;
   fuelType: string;
 }
+
 export default function Home() {
   const router = useRouter();
   const [brand, setBrand] = useState("");
@@ -47,11 +50,24 @@ export default function Home() {
   const [transmission, setTransmission] = useState("");
   const [cards, setCards] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     const fetchAds = async () => {
       setLoading(true);
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+        if (user) {
+          const { data: favoritesData } = await supabase
+            .from('favorites')
+            .select('ad_id')
+            .eq('user_id', user.id);
+          if (favoritesData) {
+            setFavorites(favoritesData.map(fav => fav.ad_id));
+          }
+        }
         const { data, error } = await supabase
           .from('listings')
           .select('*')
@@ -79,6 +95,58 @@ export default function Home() {
     router.push(route);
   };
 
+  const handleFavorite = async (e: React.MouseEvent, adId: string) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error("Trebuie să fii autentificat pentru a salva anunțuri!");
+      return;
+    }
+
+    try {
+      const { data: existingFavorite } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('ad_id', adId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingFavorite) {
+        // Remove from favorites
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('ad_id', adId)
+          .eq('user_id', user.id);
+        if (error) {
+          console.error(error);
+          toast.error("A apărut o eroare!");
+          return;
+        }
+        // Update local state by removing the ad from favorites
+        setFavorites(favorites.filter(id => id !== adId));
+        toast.success("Anunț eliminat de la favorite");
+      } else {
+        // Add to favorites
+        const { error } = await supabase
+          .from('favorites')
+          .insert([
+            { ad_id: adId, user_id: user.id }
+          ]);
+        if (error) {
+          console.error(error);
+          toast.error("A apărut o eroare!");
+          return;
+        }
+        // Update local state by adding the ad to favorites
+        setFavorites([...favorites, adId]);
+        toast.success("Anunț salvat la favorite");
+      }
+    } catch (error) {
+      toast.error("A apărut o eroare!");
+      console.error(error);
+    }
+  };
+
   if (loading) {
     return <Loading />;
   }
@@ -86,6 +154,7 @@ export default function Home() {
   return (
     <div>
       <Navbar />
+      <Toaster />
       <main className="mt-16 lg:max-w-6xl mx-auto">
         <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
@@ -168,6 +237,8 @@ export default function Home() {
               year={card.year}
               km={card.km}
               fuelType={card.fuelType}
+              isFavorite={favorites.includes(card.id)}
+              onFavoriteClick={handleFavorite}
             />
           ))}
         </div>

@@ -648,8 +648,10 @@ export default function CarAdForm() {
                                                             onChange={async (e) => {
                                                                 const files = Array.from(e.target.files || []);
                                                                 setIsUploading(true);
+                                                                let lisd = "";
                                                                 if (!listingId) {
-                                                                    setListingId(crypto.randomUUID());
+                                                                    lisd = crypto.randomUUID();
+                                                                    setListingId(lisd);
                                                                 }
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {
@@ -661,7 +663,7 @@ export default function CarAdForm() {
                                                                         const fileData = await fileDataPromise;
                                                                         const fileUuid = crypto.randomUUID();
 
-                                                                        return { listingId, fileUuid, contentType: file.type, data: (fileData as string).split(',')[1] };
+                                                                        return { listingId: listingId || lisd, fileUuid, contentType: file.type, data: (fileData as string).split(',')[1] };
                                                                     });
 
                                                                     const filesData = await Promise.all(uploadPromises);

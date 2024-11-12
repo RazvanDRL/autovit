@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
 import { toast, Toaster } from 'sonner';
 
-import { Check, ChevronDown, ChevronsUpDown, Loader2, Plus, X } from "lucide-react"
+import { Check, ChevronDown, Loader2, Plus, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -24,7 +24,6 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { ButtonDropdown } from '@/components/ui/buttonDropdown';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { InputCustom } from '@/components/ui/inputCustom';
 import { Separator } from '@/components/ui/separator';
@@ -43,6 +42,9 @@ import { useRouter } from 'next/navigation';
 import { delay } from '@/lib/delay';
 import Navbar from '@/components/navbar';
 import Tiptap from '@/components/tiptap';
+import Image from 'next/image';
+import Loading from '@/components/loading';
+import { useQueryState } from 'nuqs';
 
 const brands = ['BMW', 'Mercedes', 'Audi', 'Toyota', 'Ford'];
 const models: { [key: string]: string[] } = {
@@ -66,17 +68,36 @@ const formSchema = z.object({
     brand: z.string().min(2).max(50),
     model: z.string().min(2).max(50),
     year: z.number().int().min(1900).max(new Date().getFullYear()),
-    price: z.number().int().min(0),
-    engine_size: z.number().int().min(0),
-    power: z.number().int().min(0),
-    km: z.number().int().min(0),
+    price: z.number().int().min(1, {
+        message: "Pretul trebuie sa fie mai mare decat 0"
+    }).transform(val =>
+        val > 1000000 ? Number(val.toString().slice(0, -3) + "000") : val
+    ),
+    engine_size: z.number().int().min(1).max(9999, {
+        message: "Capacitatea cilindrica trebuie sa fie intre 1 si 9999 cm³"
+    }),
+    power: z.number().int().min(1).max(2000, {
+        message: "Puterea trebuie sa fie intre 1 si 2000 CP"
+    }),
+    km: z.number().int().min(0).max(999999, {
+        message: "Kilometrajul trebuie sa fie intre 0 si 999,999 km"
+    }),
     transmission: z.string().min(2).max(50),
     fuel_type: z.string().min(2).max(50),
-    location: z.string().min(2).max(50),
+    location_city: z.string().min(2).max(50),
+    location_county: z.string().min(2).max(50),
     description: z.string().min(30).max(9000),
     short_description: z.string().min(3).max(MAX_LENGTH),
     photos: z.array(z.string()).min(1).max(MAX_FILES),
     doors: z.string().min(3).max(3),
+}).refine(data => {
+    if (data.year === new Date().getFullYear() && data.km > 10000) {
+        return false;
+    }
+    return true;
+}, {
+    message: "Kilometrajul pare prea mare pentru un vehicul din anul curent",
+    path: ["km"]
 });
 
 const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
@@ -149,13 +170,18 @@ export default function CarAdForm() {
     const [isUploading, setIsUploading] = useState(false);
     const [user, setUser] = useState<UserType | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [listingId, setListingId] = useState<string | null>(null);
+    const [listingId, setListingId] = useQueryState("listing_id", {
+        defaultValue: ""
+    });
+    const [loading, setLoading] = useState(true);
+
     useEffect(() => {
         async function fetchUserData() {
             const { data: { user } } = await supabase.auth.getUser();
             const { data: { session } } = await supabase.auth.getSession();
             setUser(user);
             setAccessToken(session?.access_token || null);
+            setLoading(false);
         }
 
         fetchUserData();
@@ -164,25 +190,32 @@ export default function CarAdForm() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            id: '',
-            user_id: user?.id || '',
+            id: listingId || "",
+            user_id: '',
             vin: '',
             brand: '',
             model: '',
             year: new Date().getFullYear(),
-            price: 1,
-            engine_size: 1,
-            power: 1,
-            km: 1,
+            description: '',
             transmission: '',
             fuel_type: '',
-            location: '',
-            description: '',
+            location_city: '',
+            location_county: '',
             short_description: '',
             photos: [],
             doors: '',
+            price: undefined,
+            engine_size: undefined,
+            power: undefined,
+            km: undefined,
         },
     });
+
+    useEffect(() => {
+        if (user?.id) {
+            form.setValue('user_id', user.id);
+        }
+    }, [user, form]);
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
         // upload data to supabase
@@ -203,15 +236,17 @@ export default function CarAdForm() {
         }
     }
 
+    if (loading) return <Loading />;
+
     return (
         <div className="min-h-screen bg-white">
             <Navbar />
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
                 <Toaster richColors position="top-right" />
                 {user ? (
                     <div className="max-w-4xl mx-auto bg-white rounded-sm">
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                                 <h1 className='text-[32px] font-bold'>
                                     Adauga un anunt nou
                                 </h1>
@@ -222,13 +257,16 @@ export default function CarAdForm() {
                                     name="vin"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">VIN</FormLabel>
+                                            <FormLabel className="block text-sm font-semibold text-gray-600">VIN</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder="Introduceți VIN-ul..."
-                                                    className="mt-1 p-6 w-full"
-                                                    {...field}
-                                                />
+                                                <div className='flex items-center w-2/3'>
+                                                    <Input
+                                                        placeholder="Introduceți VIN-ul..."
+                                                        className="p-6 w-full text-md bg-[#EBECEF] rounded-sm border-none"
+                                                        {...field}
+                                                    />
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -243,13 +281,13 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Marca</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center'>
+                                                <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
                                                         options={brands.map((brand) => ({ value: brand, label: brand }))}
                                                         placeholder="Selecteaza o marca"
                                                         value={field.value}
                                                         onChange={field.onChange}
-                                                        className="mt-1 p-6 w-2/3"
+                                                        className="mt-1 p-6 w-full"
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
@@ -267,13 +305,13 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Model</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center'>
+                                                <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
                                                         options={form.watch("brand") ? models[form.watch("brand")].map((model) => ({ value: model, label: model })) : []}
                                                         placeholder="Selecteaza un model..."
                                                         value={field.value}
                                                         onChange={field.onChange}
-                                                        className="mt-1 p-6 w-2/3"
+                                                        className="mt-1 p-6 w-full"
                                                         disabled={!form.watch("brand")}
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
@@ -293,7 +331,7 @@ export default function CarAdForm() {
                                             <FormItem className="w-1/2">
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Anul fabricatiei</FormLabel>
                                                 <FormControl>
-                                                    <div className='flex items-center'>
+                                                    <div className='flex items-center w-2/3'>
                                                         <DropdownSelect
                                                             options={years.map((year) => ({ value: year.toString(), label: year.toString() }))}
                                                             placeholder="Selecteaza un an"
@@ -301,7 +339,7 @@ export default function CarAdForm() {
                                                             onChange={(value) => field.onChange(parseInt(value, 10))}
                                                             className="mt-1 p-6 w-full"
                                                         />
-                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "block" : "hidden")} />
+                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                     </div>
                                                 </FormControl>
                                                 <FormMessage />
@@ -318,7 +356,7 @@ export default function CarAdForm() {
                                         <FormItem className='mt-8'>
                                             <FormLabel className='block text-sm font-semibold text-gray-600'>Km</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center'>
+                                                <div className='flex items-center w-2/3'>
                                                     <div className='relative w-1/3'>
                                                         <InputCustom
                                                             id="km"
@@ -326,7 +364,8 @@ export default function CarAdForm() {
                                                             placeholder="0"
                                                             className="p-6 pr-11"
                                                             {...field}
-                                                            onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                                                            value={field.value || ''}
+                                                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
                                                         />
                                                         <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">km</span>
                                                     </div>
@@ -338,7 +377,7 @@ export default function CarAdForm() {
                                     )}
                                 />
 
-                                <h1 className='text-[16px] mt-16 font-bold mb-4'>Detaliile modelului</h1>
+                                <h1 className='text-[24px] pt-12 font-bold mb-4'>Detaliile modelului</h1>
                                 <Separator className="mb-10" />
 
                                 {/* Doors */}
@@ -349,33 +388,36 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className='mt-8 block text-sm font-semibold mb-1'>Numar de portiere</FormLabel>
                                             <FormControl>
-                                                <div className='p-1 flex border w-2/3 justify-between rounded-md items-center h-12'>
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value === "2/3" ? "secondary" : "ghost"}
-                                                        onClick={() => field.onChange("2/3")}
-                                                        className='w-1/3'
-                                                    >
-                                                        2/3
-                                                    </Button>
-                                                    <Separator orientation="vertical" className='mx-1' />
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value === "4/5" ? "secondary" : "ghost"}
-                                                        onClick={() => field.onChange("4/5")}
-                                                        className='w-1/3'
-                                                    >
-                                                        4/5
-                                                    </Button>
-                                                    <Separator orientation="vertical" className='mx-1' />
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value === "6/7" ? "secondary" : "ghost"}
-                                                        onClick={() => field.onChange("6/7")}
-                                                        className='w-1/3'
-                                                    >
-                                                        6/7
-                                                    </Button>
+                                                <div className='flex items-center w-2/3'>
+                                                    <div className='p-1 bg-[#EBECEF] flex w-full justify-between rounded-md items-center h-12'>
+                                                        <Button
+                                                            type="button"
+                                                            variant={field.value === "2/3" ? "secondary" : "ghost"}
+                                                            onClick={() => field.onChange("2/3")}
+                                                            className={`w-1/3 ${field.value === "2/3" ? "bg-white/80" : "bg-[#EBECEF]"}`}
+                                                        >
+                                                            2/3
+                                                        </Button>
+                                                        <Separator orientation="vertical" className='mx-1 bg-black/20' />
+                                                        <Button
+                                                            type="button"
+                                                            variant={field.value === "4/5" ? "secondary" : "ghost"}
+                                                            onClick={() => field.onChange("4/5")}
+                                                            className={`w-1/3 ${field.value === "4/5" ? "bg-white/80" : "bg-[#EBECEF]"}`}
+                                                        >
+                                                            4/5
+                                                        </Button>
+                                                        <Separator orientation="vertical" className='mx-1 bg-black/20' />
+                                                        <Button
+                                                            type="button"
+                                                            variant={field.value === "6/7" ? "secondary" : "ghost"}
+                                                            onClick={() => field.onChange("6/7")}
+                                                            className={`w-1/3 ${field.value === "6/7" ? "bg-white/80" : "bg-[#EBECEF]"}`}
+                                                        >
+                                                            6/7
+                                                        </Button>
+                                                    </div>
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -391,7 +433,7 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Tipul de combustibil</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center'>
+                                                <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
                                                         options={[
                                                             { value: "Benzina", label: "Benzina" },
@@ -402,9 +444,9 @@ export default function CarAdForm() {
                                                         placeholder="Selecteaza un tip de combustibil"
                                                         value={field.value}
                                                         onChange={field.onChange}
-                                                        className="mt-1 p-6 w-2/3"
+                                                        className="mt-1 p-6 w-full"
                                                     />
-                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "block" : "hidden")} />
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -413,7 +455,7 @@ export default function CarAdForm() {
                                 />
 
                                 {/* Power */}
-                                <div className='flex justify-between w-2/3'>
+                                <div className='flex gap-8'>
                                     <FormField
                                         control={form.control}
                                         name="power"
@@ -428,12 +470,12 @@ export default function CarAdForm() {
                                                                 type="number"
                                                                 placeholder="0"
                                                                 className="p-6 pr-20 w-full"
-                                                                {...field}
-                                                                onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                                                                value={field.value || ''}
+                                                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
                                                             />
                                                             <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">CP</span>
                                                         </div>
-                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value > 0 ? "block" : "hidden")} />
+                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value > 0 ? "opacity-100" : "opacity-0")} />
                                                     </div>
                                                 </FormControl>
                                                 <FormMessage />
@@ -455,12 +497,12 @@ export default function CarAdForm() {
                                                                 type="number"
                                                                 placeholder="0"
                                                                 className="p-6 pr-20 w-full"
-                                                                {...field}
-                                                                onChange={(e) => field.onChange(parseInt(e.target.value, 10))}
+                                                                value={field.value || ''}
+                                                                onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
                                                             />
-                                                            <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">cm3</span>
+                                                            <span className="opacity-50 absolute inset-y-0 right-3 flex items-center">cm<sup>3</sup></span>
                                                         </div>
-                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value > 0 ? "block" : "hidden")} />
+                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value > 0 ? "opacity-100" : "opacity-0")} />
                                                     </div>
                                                 </FormControl>
                                                 <FormMessage />
@@ -477,24 +519,27 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className='mt-8 block text-sm font-semibold mb-1'>Cutia de viteze</FormLabel>
                                             <FormControl>
-                                                <div className='p-1 flex border w-2/3 justify-between rounded-md items-center h-12'>
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value === "Manual" ? "secondary" : "ghost"}
-                                                        onClick={() => field.onChange("Manual")}
-                                                        className='w-1/2'
-                                                    >
-                                                        Manuala
-                                                    </Button>
-                                                    <Separator orientation="vertical" className='mx-1' />
-                                                    <Button
-                                                        type="button"
-                                                        variant={field.value === "Automatic" ? "secondary" : "ghost"}
-                                                        onClick={() => field.onChange("Automatic")}
-                                                        className='w-1/2'
-                                                    >
-                                                        Automata
-                                                    </Button>
+                                                <div className='flex items-center w-2/3'>
+                                                    <div className='p-1 flex bg-[#EBECEF] justify-between rounded-md items-center h-12'>
+                                                        <Button
+                                                            type="button"
+                                                            variant={field.value === "Manual" ? "secondary" : "ghost"}
+                                                            onClick={() => field.onChange("Manual")}
+                                                            className={`w-1/2 ${field.value === "Manual" ? "bg-white/80" : "bg-[#EBECEF]"}`}
+                                                        >
+                                                            Manuala
+                                                        </Button>
+                                                        <Separator orientation="vertical" className='mx-1 bg-black/20' />
+                                                        <Button
+                                                            type="button"
+                                                            variant={field.value === "Automatic" ? "secondary" : "ghost"}
+                                                            onClick={() => field.onChange("Automatic")}
+                                                            className={`w-1/2 ${field.value === "Automatic" ? "bg-white/80" : "bg-[#EBECEF]"}`}
+                                                        >
+                                                            Automata
+                                                        </Button>
+                                                    </div>
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
                                             </FormControl>
                                             <FormMessage />
@@ -508,7 +553,7 @@ export default function CarAdForm() {
                                     name="photos"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600 mb-2">Fotografii</FormLabel>
+                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600 mb-2">Fotografii (minim 3)</FormLabel>
                                             <FormControl>
                                                 <div className="flex flex-wrap gap-4">
                                                     {field.value.map((photo, index) => (
@@ -528,10 +573,11 @@ export default function CarAdForm() {
                                                                 field.onChange(newPhotos);
                                                             }}
                                                         >
-                                                            <img
+                                                            <Image
                                                                 src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${listingId}/${photo}-thumbnail.webp`}
                                                                 alt={`Photo ${index + 1}`}
                                                                 className="w-full h-full object-cover"
+                                                                fill
                                                             />
                                                             {index === 0 && (
                                                                 <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded-md text-sm">
@@ -562,10 +608,9 @@ export default function CarAdForm() {
                                                             onChange={async (e) => {
                                                                 const files = Array.from(e.target.files || []);
                                                                 setIsUploading(true);
-                                                                const listingId = crypto.randomUUID();
-                                                                setListingId(listingId);
-                                                                form.setValue("id", listingId);
-                                                                console.log(listingId);
+                                                                if (!listingId) {
+                                                                    setListingId(crypto.randomUUID());
+                                                                }
 
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {
@@ -605,12 +650,13 @@ export default function CarAdForm() {
                                                                 } finally {
                                                                     setIsUploading(false);
                                                                 }
-                                                            }}
+                                                            }
+                                                            }
                                                         />
                                                         {isUploading ? (
                                                             <div className="flex flex-col items-center">
                                                                 <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
-                                                                <span className="mt-2 text-sm text-gray-500">Uploading...</span>
+                                                                <span className="mt-2 text-sm text-gray-500">Încărcare...</span>
                                                             </div>
                                                         ) : (
                                                             <Plus className="w-8 h-8 text-gray-400" />
@@ -651,7 +697,7 @@ export default function CarAdForm() {
                                             <FormControl>
                                                 <Textarea
                                                     placeholder="Scrie o descriere scurta pentru anunt..."
-                                                    className="mt-1 p-6 w-full"
+                                                    className="mt-1 p-6 w-2/3"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -668,13 +714,22 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Pret</FormLabel>
                                             <FormControl>
-                                                <Input
-                                                    placeholder="Introduceți pretul..."
-                                                    className="mt-1 p-6 w-full"
-                                                    type="number"
-                                                    {...field}
-                                                    onChange={(e) => field.onChange(Number(e.target.value))}
-                                                />
+                                                <div className='flex items-center w-2/3'>
+                                                    <div className='relative w-1/3'>
+                                                        <InputCustom
+                                                            id="km"
+                                                            type="number"
+                                                            placeholder="0"
+                                                            min={0}
+                                                            className="p-6 pr-12"
+                                                            {...field}
+                                                            value={field.value || ''}
+                                                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
+                                                        />
+                                                        <span className="opacity-50 absolute inset-y-0 font-[500] right-3 flex items-center">EUR</span>
+                                                    </div>
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value > 0 ? "block" : "hidden")} />
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -682,29 +737,51 @@ export default function CarAdForm() {
                                 />
 
                                 {/* Location */}
-                                <FormField
-                                    control={form.control}
-                                    name="location"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Locatie</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Introduceți locatia..."
-                                                    className="mt-1 p-6 w-full"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className='flex gap-8'>
+                                    <FormField
+                                        control={form.control}
+                                        name="location_city"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Oras</FormLabel>
+                                                <FormControl>
+                                                    <InputCustom
+                                                        placeholder="Introduceți orasul..."
+                                                        className="mt-1 p-6 w-full"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="location_county"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Judet</FormLabel>
+                                                <FormControl>
+                                                    <InputCustom
+                                                        placeholder="Introduceți judetul..."
+                                                        className="mt-1 p-6 w-full"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
 
                                 {/* Submit Button */}
-                                <Button type="submit" size="lg" className="mt-8 bg-blue-600 w-full">
-                                    Creeaza anuntul
-                                </Button>
+                                <div className='flex justify-end w-full'>
+                                    <Button type="submit" size="lg" className="mt-8 bg-blue-600">
+                                        Creeaza anuntul
+                                    </Button>
+                                </div>
                             </form>
                         </Form>
                     </div>
@@ -714,6 +791,6 @@ export default function CarAdForm() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     )
 }

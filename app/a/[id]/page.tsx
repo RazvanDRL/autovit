@@ -321,7 +321,7 @@ export default function Page() {
                                 <div>
                                     <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
                                     <div
-                                        className={`font-[350] opacity-90 ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
+                                        className={`font-[350] opacity-90 max-w-[45vw] ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
                                         dangerouslySetInnerHTML={{
                                             __html: ad.description.replace(/<p>\s*<\/p>/g, '<br>')
                                         }}

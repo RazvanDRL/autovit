@@ -128,11 +128,12 @@ export default function ChatPage() {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
-                    filter: `or(and(sender_id=eq.${currentUser.id},receiver_id=eq.${params.id}),and(sender_id=eq.${params.id},receiver_id=eq.${currentUser.id}))`,
                 },
                 (payload) => {
-                    console.log('New message:', payload.new, 'from', payload.new.sender_id, 'to', payload.new.receiver_id);
-                    setMessages(prev => [...prev, payload.new as Message]);
+                    if (payload.new.sender_id === currentUser.id || payload.new.receiver_id === currentUser.id) {
+                        console.log('New message:', payload.new.content, 'from', payload.new.sender_id, 'to', payload.new.receiver_id);
+                        setMessages(prev => [...prev, payload.new as Message]);
+                    }
                 }
             )
             .subscribe();
@@ -140,7 +141,7 @@ export default function ChatPage() {
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [currentUser, params.id]);
+    }, [params.id, currentUser]);
 
     const fetchMessages = async () => {
         if (!currentUser) return;
@@ -175,9 +176,9 @@ export default function ChatPage() {
             setIsSending(true);
 
             // Check rate limiting
-            if (!checkRateLimit()) {
-                return;
-            }
+            // if (!checkRateLimit()) {
+            //     return;
+            // }
 
             // Validate message content
             const validationResult = messageSchema.safeParse({ content: newMessage });

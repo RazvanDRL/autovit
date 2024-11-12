@@ -147,6 +147,7 @@ export default function ChatPage() {
                 (payload) => {
                     if (payload.new.sender_id === currentUser.id || payload.new.receiver_id === currentUser.id) {
                         setMessages(prev => [...prev, payload.new as Message]);
+                        markMessagesAsRead();
                     }
                 }
             )

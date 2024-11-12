@@ -151,6 +151,16 @@ export default function ChatPage() {
                 }
             )
             .subscribe();
+        const channel2 = supabase
+            .channel('messages2')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
+                if (payload.new.sender_id === currentUser.id || payload.new.receiver_id === currentUser.id) {
+                    setMessages(prev => prev.map(message =>
+                        message.id === payload.new.id ? payload.new as Message : message
+                    ));
+                }
+            })
+            .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
@@ -299,7 +309,7 @@ export default function ChatPage() {
                                 {formatMessageTime(message.created_at)}
                                 {message.sender_id === currentUser?.id && (
                                     <span className="ml-2">
-                                        {message.read ? '✓✓' : '✓'}
+                                        {message.read ? 'Seen' : 'Sent'}
                                     </span>
                                 )}
                             </div>

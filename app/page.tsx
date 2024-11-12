@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import Loading from '@/components/loading';
 import { toast, Toaster } from 'sonner';
 import { User as UserType } from '@supabase/supabase-js';
+import { FAVORITES_UPDATED_EVENT } from '@/components/navbar';
 
 const fuelTypes = [
   { value: "Petrol", label: "Petrol" },
@@ -141,6 +142,9 @@ export default function Home() {
         setFavorites([...favorites, adId]);
         toast.success("Anunț salvat la favorite");
       }
+
+      // Dispatch event to update navbar
+      window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT));
     } catch (error) {
       toast.error("A apărut o eroare!");
       console.error(error);

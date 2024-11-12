@@ -31,7 +31,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { toast, Toaster } from "sonner";
 
-
+// Add this near the top of the file, outside the component
+export const FAVORITES_UPDATED_EVENT = 'favoritesUpdated';
 
 export default function Navbar() {
     const router = useRouter();
@@ -39,6 +40,7 @@ export default function Navbar() {
     const [avatar, setAvatar] = useState("");
     const [email, setEmail] = useState("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [favoritesCount, setFavoritesCount] = useState(0);
 
     async function logout() {
         await supabase.auth.signOut();
@@ -85,8 +87,39 @@ export default function Navbar() {
         }
     }
 
+    async function getFavoritesCount() {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+            const { data, error } = await supabase
+                .from('favorites')
+                .select('*', { count: 'exact' })
+                .eq('user_id', user.id);
+
+            if (error) {
+                console.error('Error fetching favorites:', error);
+                return;
+            }
+
+            setFavoritesCount(data?.length || 0);
+        }
+    }
+
     useEffect(() => {
-        getCredits();
+        // Initial fetch
+        getFavoritesCount();
+
+        // Listen for favorites updates
+        const handleFavoritesUpdate = () => {
+            getFavoritesCount();
+        };
+
+        window.addEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate);
+
+        // Cleanup
+        return () => {
+            window.removeEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate);
+        };
     }, []);
 
     const handleAccountClick = () => {
@@ -114,8 +147,13 @@ export default function Navbar() {
                     </Link>
 
                     <Link href="/favourites">
-                        <Button variant="ghost" size="icon" className="w-9 h-9 sm:w-10 sm:h-10">
+                        <Button variant="ghost" size="icon" className="w-9 h-9 sm:w-10 sm:h-10 relative">
                             <Heart className="text-black stroke-[2.2] h-5 w-5" />
+                            {favoritesCount > 0 && (
+                                <span className="absolute -top-1 -right-1 bg-[#E83B3B] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                    {favoritesCount > 99 ? '99+' : favoritesCount}
+                                </span>
+                            )}
                         </Button>
                     </Link>
 

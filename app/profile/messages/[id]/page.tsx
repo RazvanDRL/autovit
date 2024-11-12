@@ -310,7 +310,7 @@ export default function ChatPage() {
                                 {formatMessageTime(message.created_at)}
                                 {message.sender_id === currentUser?.id && (
                                     <span className="ml-2">
-                                        {message.read ? 'Seen' : 'Sent'}
+                                        {message.read ? 'Vazut' : 'Trimis'}
                                     </span>
                                 )}
                             </div>

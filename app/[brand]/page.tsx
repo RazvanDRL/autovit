@@ -81,7 +81,7 @@ export default function Page() {
                             km={ad.km}
                             fuelType={ad.fuel_type}
                             year={ad.year}
-                            location={ad.location}
+                            location={ad.location_city + ", " + ad.location_county}
                             description={ad.short_description}
                             created_at={ad.created_at}
                             is_company={ad.is_company}

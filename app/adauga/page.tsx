@@ -44,7 +44,7 @@ import Navbar from '@/components/navbar';
 import Tiptap from '@/components/tiptap';
 import Image from 'next/image';
 import Loading from '@/components/loading';
-import { useQueryState } from 'nuqs';
+// import { useQueryState } from 'nuqs';
 import cities from '@/lib/cities.json';
 import { County, fetchCounties } from '@/lib/index';
 
@@ -66,6 +66,9 @@ const MAX_LENGTH = 30;
 const formSchema = z.object({
     id: z.string(),
     user_id: z.string(),
+    user_full_name: z.string(),
+    user_phone: z.string(),
+    is_company: z.boolean(),
     vin: z.string().min(16).max(17).optional(),
     brand: z.string().min(2).max(50),
     model: z.string().min(2).max(50),
@@ -172,9 +175,7 @@ export default function CarAdForm() {
     const [isUploading, setIsUploading] = useState(false);
     const [user, setUser] = useState<UserType | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
-    const [listingId, setListingId] = useQueryState("listing_id", {
-        defaultValue: ""
-    });
+    const [listingId, setListingId] = useState("");
     const [loading, setLoading] = useState(true);
     const [counties, setCounties] = useState<County[]>([]);
 
@@ -196,6 +197,9 @@ export default function CarAdForm() {
         defaultValues: {
             id: listingId || "",
             user_id: '',
+            user_full_name: user?.user_metadata.full_name || '',
+            user_phone: user?.phone || '',
+            is_company: false,
             vin: '',
             brand: '',
             model: '',
@@ -222,8 +226,40 @@ export default function CarAdForm() {
     }, [user, form]);
 
     async function onSubmit(data: z.infer<typeof formSchema>) {
-        // upload data to supabase
         console.log(data);
+        data.id = listingId || '';
+        if (!user?.id) {
+            toast.error('Eroare la adaugarea anuntului!');
+            return;
+        }
+
+        const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('name')
+            .eq('id', user?.id)
+            .single();
+
+        if (profileError) {
+            toast.error('Eroare la adaugarea anuntului!');
+            console.error(profileError);
+        }
+
+        if (!profileData) {
+            toast.error('Eroare la adaugarea anuntului!');
+            return;
+        }
+
+        // if (profileData.is_company) {
+        //     data.is_company = true;
+        // }
+
+        data.is_company = false;
+        data.user_phone = '0770429755';
+
+        if (data.user_full_name === '') {
+            data.user_full_name = profileData.name || '';
+        }
+
         const { data: anuntData, error: anuntError } = await supabase
             .from('listings')
             .insert([{ ...data, user_id: user?.id }])
@@ -235,13 +271,9 @@ export default function CarAdForm() {
             toast.success('Anuntul a fost adaugat cu succes! Veti fi redirectat la pagina anuntului.');
             await delay(2000);
             if (data.id) {
-                router.push(`/a/${data.id}`);
+                router.replace(`/a/${data.id}`);
             }
         }
-    }
-
-    if (!listingId) {
-        setListingId(crypto.randomUUID());
     }
 
     if (loading) return <Loading />;
@@ -616,7 +648,9 @@ export default function CarAdForm() {
                                                             onChange={async (e) => {
                                                                 const files = Array.from(e.target.files || []);
                                                                 setIsUploading(true);
-
+                                                                if (!listingId) {
+                                                                    setListingId(crypto.randomUUID());
+                                                                }
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {
                                                                         const reader = new FileReader();

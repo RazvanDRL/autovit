@@ -37,12 +37,11 @@ function formatMessageTime(dateString: string) {
 // Message validation schema
 const messageSchema = z.object({
     content: z.string()
-        .min(1, "Message cannot be empty")
-        .max(2000, "Message is too long (max 2000 characters)")
+        .min(1, "Mesajul nu poate fi gol")
+        .max(2000, "Mesajul este prea lung (maxim 2000 caractere)")
         .transform(str => str.trim())
-        // Basic pattern to catch obvious malicious content
         .refine(str => !/<script\b[^>]*>[\s\S]*?<\/script>/gi.test(str), {
-            message: "Invalid message content"
+            message: "Conținut mesaj invalid"
         })
 });
 
@@ -72,7 +71,7 @@ export default function ChatPage() {
         }
 
         if (messageCount.current >= maxMessages) {
-            toast.error("You're sending messages too quickly. Please wait a moment.");
+            toast.error("Trimiți mesaje prea repede. Te rugăm să aștepți un moment.");
             return false;
         }
 
@@ -118,6 +117,21 @@ export default function ChatPage() {
     useEffect(() => {
         if (!currentUser) return;
 
+        // Mark messages as read when they're viewed
+        const markMessagesAsRead = async () => {
+            const { error } = await supabase
+                .from('messages')
+                .update({ read: true })
+                .eq('receiver_id', currentUser.id)
+                .eq('sender_id', params.id)
+                .eq('read', false);
+
+            if (error) {
+                console.error('Error marking messages as read:', error);
+            }
+        };
+
+        markMessagesAsRead();
         fetchMessages();
 
         const channel = supabase
@@ -192,7 +206,7 @@ export default function ChatPage() {
 
             // Additional checks
             if (sanitizedContent.length === 0) {
-                toast.error("Message cannot be empty");
+                toast.error("Mesajul nu poate fi gol");
                 return;
             }
 
@@ -209,7 +223,7 @@ export default function ChatPage() {
 
             if (error) {
                 console.error('Error sending message:', error);
-                toast.error('Error sending message');
+                toast.error('Eroare la trimiterea mesajului');
                 return;
             }
 
@@ -250,7 +264,7 @@ export default function ChatPage() {
     if (loading) return <Loading />;
 
     return (
-        <div className="flex flex-col h-[50vh] w-[25vw] border-2 border-gray-300 rounded-lg m-24">
+        <div className="flex flex-col h-[600px] w-[400px] border-2 border-gray-300 rounded-lg m-24">
             {/* Chat header */}
             <div className="border-b p-4 flex items-center">
                 <Avatar className="h-10 w-10">
@@ -258,7 +272,7 @@ export default function ChatPage() {
                     <AvatarFallback>{otherUser?.email?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4">
-                    <h2 className="font-semibold">{otherUser?.email || 'User'}</h2>
+                    <h2 className="font-semibold">{otherUser?.email || 'Utilizator'}</h2>
                 </div>
             </div>
 
@@ -283,6 +297,11 @@ export default function ChatPage() {
                                     }`}
                             >
                                 {formatMessageTime(message.created_at)}
+                                {message.sender_id === currentUser?.id && (
+                                    <span className="ml-2">
+                                        {message.read ? '✓✓' : '✓'}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -295,7 +314,7 @@ export default function ChatPage() {
                 <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder="Scrie un mesaj..."
                     className="flex-1"
                     disabled={isSending}
                     maxLength={2000}
@@ -304,10 +323,10 @@ export default function ChatPage() {
                     {isSending ? (
                         <span className="flex items-center">
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Sending
+                            Se trimite
                         </span>
                     ) : (
-                        'Send'
+                        'Trimite'
                     )}
                 </Button>
             </form>

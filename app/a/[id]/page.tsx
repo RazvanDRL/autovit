@@ -235,7 +235,10 @@ export default function Page() {
                                                                         loading="eager"
                                                                         fetchPriority="high"
                                                                         priority
-                                                                        className=""
+                                                                        className="transition-all duration-300 blur-sm"
+                                                                        onLoadingComplete={(image) => {
+                                                                            image.classList.remove('blur-sm');
+                                                                        }}
                                                                     />
                                                                 </CardContent>
                                                             </Card>

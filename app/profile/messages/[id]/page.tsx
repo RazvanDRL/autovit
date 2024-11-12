@@ -110,12 +110,16 @@ export default function ChatPage() {
     }, [params.id]);
 
     useEffect(() => {
+        if (messages.length > 0) {
+            jumpToBottom();
+        }
+    }, [messages]);
+
+    useEffect(() => {
         if (!currentUser) return;
 
-        // Initial fetch of messages
         fetchMessages();
 
-        // Subscribe to new messages
         const channel = supabase
             .channel('messages')
             .on(
@@ -124,12 +128,11 @@ export default function ChatPage() {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
-                    filter: `sender_id=eq.${params.id},receiver_id=eq.${currentUser.id}`,
+                    filter: `or(and(sender_id=eq.${currentUser.id},receiver_id=eq.${params.id}),and(sender_id=eq.${params.id},receiver_id=eq.${currentUser.id}))`,
                 },
                 (payload) => {
+                    console.log('New message:', payload.new, 'from', payload.new.sender_id, 'to', payload.new.receiver_id);
                     setMessages(prev => [...prev, payload.new as Message]);
-                    // Scroll to bottom when new message arrives
-                    setTimeout(scrollToBottom, 100); // Small delay to ensure message is rendered
                 }
             )
             .subscribe();
@@ -140,25 +143,28 @@ export default function ChatPage() {
     }, [currentUser, params.id]);
 
     const fetchMessages = async () => {
+        if (!currentUser) return;
+
         const { data, error } = await supabase
             .from('messages')
             .select('*')
-            .or(`sender_id.eq.${currentUser?.id},receiver_id.eq.${currentUser?.id}`)
-            .or(`sender_id.eq.${params.id},receiver_id.eq.${params.id}`)
+            .or(
+                `and(sender_id.eq.${currentUser.id},receiver_id.eq.${params.id}),` +
+                `and(sender_id.eq.${params.id},receiver_id.eq.${currentUser.id})`
+            )
             .order('created_at', { ascending: true });
 
         if (error) {
+            console.error('Error fetching messages:', error);
             toast.error('Error fetching messages');
             return;
         }
 
         setMessages(data || []);
-        // Scroll to bottom after messages are loaded
-        setTimeout(scrollToBottom, 100); // Small delay to ensure messages are rendered
     };
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const jumpToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
     };
 
     const sendMessage = async (e: React.FormEvent) => {
@@ -189,29 +195,16 @@ export default function ChatPage() {
                 return;
             }
 
-            // Check if user is blocked or blocking
-            const { data: blockStatus } = await supabase
-                .from('user_blocks')
-                .select('*')
-                .or(`blocker_id.eq.${currentUser.id},blocked_id.eq.${currentUser.id}`)
-                .or(`blocker_id.eq.${params.id},blocked_id.eq.${params.id}`)
-                .single();
+            // Ensure we're sending to the correct user
+            const messageData = {
+                content: sanitizedContent,
+                sender_id: currentUser.id,
+                receiver_id: params.id,
+            };
 
-            if (blockStatus) {
-                toast.error("Unable to send message to this user");
-                return;
-            }
-
-            // Insert the message
             const { error } = await supabase
                 .from('messages')
-                .insert([
-                    {
-                        content: sanitizedContent,
-                        sender_id: currentUser.id,
-                        receiver_id: params.id,
-                    }
-                ]);
+                .insert([messageData]);
 
             if (error) {
                 console.error('Error sending message:', error);
@@ -220,8 +213,7 @@ export default function ChatPage() {
             }
 
             setNewMessage('');
-            // Scroll to bottom after sending message
-            setTimeout(scrollToBottom, 100);
+            jumpToBottom();
 
         } catch (error) {
             console.error('Error sending message:', error);
@@ -262,7 +254,7 @@ export default function ChatPage() {
             <div className="border-b p-4 flex items-center">
                 <Avatar className="h-10 w-10">
                     <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
+                    <AvatarFallback>{otherUser?.email?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4">
                     <h2 className="font-semibold">{otherUser?.email || 'User'}</h2>

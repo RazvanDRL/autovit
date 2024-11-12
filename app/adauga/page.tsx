@@ -45,6 +45,8 @@ import Tiptap from '@/components/tiptap';
 import Image from 'next/image';
 import Loading from '@/components/loading';
 import { useQueryState } from 'nuqs';
+import cities from '@/lib/cities.json';
+import { County, fetchCounties } from '@/lib/index';
 
 const brands = ['BMW', 'Mercedes', 'Audi', 'Toyota', 'Ford'];
 const models: { [key: string]: string[] } = {
@@ -174,6 +176,7 @@ export default function CarAdForm() {
         defaultValue: ""
     });
     const [loading, setLoading] = useState(true);
+    const [counties, setCounties] = useState<County[]>([]);
 
     useEffect(() => {
         async function fetchUserData() {
@@ -186,6 +189,7 @@ export default function CarAdForm() {
 
         fetchUserData();
     }, []);
+
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -234,6 +238,10 @@ export default function CarAdForm() {
                 router.push(`/a/${data.id}`);
             }
         }
+    }
+
+    if (!listingId) {
+        setListingId(crypto.randomUUID());
     }
 
     if (loading) return <Loading />;
@@ -608,9 +616,6 @@ export default function CarAdForm() {
                                                             onChange={async (e) => {
                                                                 const files = Array.from(e.target.files || []);
                                                                 setIsUploading(true);
-                                                                if (!listingId) {
-                                                                    setListingId(crypto.randomUUID());
-                                                                }
 
                                                                 try {
                                                                     const uploadPromises = files.map(async (file) => {
@@ -737,7 +742,7 @@ export default function CarAdForm() {
                                 />
 
                                 {/* Location */}
-                                <div className='flex gap-8'>
+                                <div className='flex w-full gap-8'>
                                     <FormField
                                         control={form.control}
                                         name="location_city"
@@ -745,11 +750,20 @@ export default function CarAdForm() {
                                             <FormItem>
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Oras</FormLabel>
                                                 <FormControl>
-                                                    <InputCustom
-                                                        placeholder="Introduceți orasul..."
-                                                        className="mt-1 p-6 w-full"
-                                                        {...field}
-                                                    />
+                                                    <div className='flex items-center min-w-[300px]'>
+                                                        <DropdownSelect
+                                                            options={cities.map((city: { auto: string; nume: string }) => ({ value: city.auto, label: city.nume }))}
+                                                            placeholder="Selecteaza un oras"
+                                                            value={cities.find(city => city.auto === field.value)?.nume || field.value}
+                                                            onChange={async (value) => {
+                                                                field.onChange(value)
+                                                                const countiesData = await fetchCounties(value);
+                                                                setCounties(countiesData);
+                                                            }}
+                                                            className="mt-1 p-6 w-full"
+                                                        />
+                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -763,11 +777,29 @@ export default function CarAdForm() {
                                             <FormItem>
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Judet</FormLabel>
                                                 <FormControl>
-                                                    <InputCustom
-                                                        placeholder="Introduceți judetul..."
-                                                        className="mt-1 p-6 w-full"
-                                                        {...field}
-                                                    />
+                                                    <div className='flex items-center min-w-[300px]'>
+                                                        <DropdownSelect
+                                                            options={counties
+                                                                .filter((county: County) => county.nume !== undefined)
+                                                                .reduce((unique: County[], current: County) => {
+                                                                    if (!unique.some(item => item.nume === current.nume)) {
+                                                                        unique.push(current);
+                                                                    }
+                                                                    return unique;
+                                                                }, [])
+                                                                .sort((a, b) => (a.nume || '').localeCompare(b.nume || ''))
+                                                                .map((county: County) => ({
+                                                                    value: county.nume as string,
+                                                                    label: county.nume
+                                                                }))}
+                                                            placeholder="Selecteaza un judet"
+                                                            value={counties.find(county => county.nume === field.value)?.nume || field.value}
+                                                            onChange={field.onChange}
+                                                            className="mt-1 p-6 w-full"
+                                                            disabled={!form.watch('location_city')}
+                                                        />
+                                                        <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>

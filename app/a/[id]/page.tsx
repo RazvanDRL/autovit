@@ -225,8 +225,8 @@ export default function Page() {
                                                 <CarouselContent>
                                                     {ad.photos.map((photo, index) => (
                                                         <CarouselItem key={index}>
-                                                            <Card>
-                                                                <CardContent className="p-0 aspect-[4/3] relative">
+                                                            <Card className="border-none">
+                                                                <CardContent className="p-0 aspect-[4/3] relative bg-gray-200/50">
                                                                     <Image
                                                                         src={`https://pub-5e0f9c3c28524b78a12ca8f84bfb76d5.r2.dev/${params.id}/${photo}.webp`}
                                                                         alt={`${ad.brand} ${ad.model}`}
@@ -324,7 +324,7 @@ export default function Page() {
                                 <div>
                                     <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
                                     <div
-                                        className={`font-[350] opacity-90 max-w-[45vw] ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
+                                        className={`font-[350] opacity-90 ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
                                         dangerouslySetInnerHTML={{
                                             __html: ad.description.replace(/<p>\s*<\/p>/g, '<br>')
                                         }}

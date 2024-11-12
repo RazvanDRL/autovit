@@ -5,12 +5,9 @@ import Link from "next/link";
 import { Heart, MessageCircle, User, UserRound } from "lucide-react";
 
 import {
-    Cloud,
     CreditCard,
-    Keyboard,
     LifeBuoy,
     LogOut,
-    Mail,
     MessageSquare,
     Plus,
     Settings,
@@ -29,24 +26,19 @@ import {
 
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { toast, Toaster } from "sonner";
-
+import { toast } from "sonner";
+import { User as UserType } from '@supabase/supabase-js';
 // Add this near the top of the file, outside the component
 export const FAVORITES_UPDATED_EVENT = 'favoritesUpdated';
 
 export default function Navbar() {
     const router = useRouter();
+    const [user, setUser] = useState<UserType | null>(null);
     const [credits, setCredits] = useState(0);
-    const [avatar, setAvatar] = useState("");
-    const [email, setEmail] = useState("");
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [favoritesCount, setFavoritesCount] = useState(0);
 
     async function logout() {
         await supabase.auth.signOut();
-        localStorage.removeItem('user');
-        localStorage.removeItem('avatar');
-        setIsLoggedIn(false);
         router.push("/");
     }
 
@@ -65,13 +57,8 @@ export default function Navbar() {
         }
 
         if (!user) {
-            setIsLoggedIn(false);
             return;
         }
-
-        setIsLoggedIn(true);
-        setEmail(user.email || "");
-
         const { data, error } = await supabase
             .from('profiles')
             .select('credits')
@@ -87,13 +74,32 @@ export default function Navbar() {
         }
     }
 
-    async function getFavoritesCount() {
-        const { data: { user } } = await supabase.auth.getUser();
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+            
+            // Only fetch favorites count if we have a user
+            if (user) {
+                getFavoritesCount();
+            }
+        }
 
+        getUser();
+
+        // Listen for favorites updates
+        window.addEventListener(FAVORITES_UPDATED_EVENT, getFavoritesCount);
+
+        return () => {
+            window.removeEventListener(FAVORITES_UPDATED_EVENT, getFavoritesCount);
+        };
+    }, []); // Add empty dependency array
+
+    async function getFavoritesCount() {
         if (user) {
-            const { data, error } = await supabase
+            const { count, error } = await supabase
                 .from('favorites')
-                .select('*', { count: 'exact' })
+                .select('*', { count: 'exact', head: true })
                 .eq('user_id', user.id);
 
             if (error) {
@@ -101,29 +107,12 @@ export default function Navbar() {
                 return;
             }
 
-            setFavoritesCount(data?.length || 0);
+            setFavoritesCount(count || 0);
         }
     }
 
-    useEffect(() => {
-        // Initial fetch
-        getFavoritesCount();
-
-        // Listen for favorites updates
-        const handleFavoritesUpdate = () => {
-            getFavoritesCount();
-        };
-
-        window.addEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate);
-
-        // Cleanup
-        return () => {
-            window.removeEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate);
-        };
-    }, []);
-
     const handleAccountClick = () => {
-        if (!isLoggedIn) {
+        if (!user) {
             router.push("/login");
         }
     };
@@ -150,7 +139,7 @@ export default function Navbar() {
                         <Button variant="ghost" size="icon" className="w-9 h-9 sm:w-10 sm:h-10 relative">
                             <Heart className="text-black stroke-[2.2] h-5 w-5" />
                             {favoritesCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-[#E83B3B] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                <span className="absolute -top-0.5 -right-0.5 bg-[#E83B3B] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                     {favoritesCount > 99 ? '99+' : favoritesCount}
                                 </span>
                             )}
@@ -170,12 +159,12 @@ export default function Navbar() {
                                     </Button>
                                 </div>
                             </DropdownMenuTrigger>
-                            {isLoggedIn && (
+                            {user && (
                                 <DropdownMenuContent className="w-64 md:w-72" align="end" sideOffset={8}>
                                     <DropdownMenuLabel className="font-normal">
                                         <div className="flex flex-col space-y-1">
                                             <p className="text-sm font-medium leading-none">Cont</p>
-                                            <p className="text-xs leading-none text-muted-foreground">{email}</p>
+                                            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                                         </div>
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />

@@ -18,6 +18,7 @@ interface CardProps {
     fuelType: string
     isFavorite?: boolean
     onFavoriteClick?: (e: React.MouseEvent, id: string) => void
+    isProcessing?: boolean
 }
 
 export default function Card({
@@ -34,6 +35,7 @@ export default function Card({
     fuelType,
     isFavorite = false,
     onFavoriteClick,
+    isProcessing = false,
 }: CardProps) {
     const sizeConfig = {
         small: {
@@ -67,7 +69,8 @@ export default function Card({
     return (
         <Link
             href={`/a/${id}`}
-            className="bg-white shadow-lg transition-all duration-300 rounded-lg overflow-hidden flex flex-col"
+            className="bg-white shadow-lg transition-all duration-300 rounded-lg overflow-hidden flex flex-col
+                hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]"
             style={{ width: config.width }}
         >
             <div className="relative" style={{ height: config.imageHeight }}>
@@ -81,6 +84,7 @@ export default function Card({
                     loading="eager"
                     quality={50}
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                 <button
                     onClick={(e) => {
                         e.preventDefault();
@@ -88,17 +92,17 @@ export default function Card({
                             onFavoriteClick(e, id);
                         }
                     }}
-                    className="absolute top-2 right-2 p-1 bg-white/80 rounded-full hover:bg-white transition-colors duration-200"
+                    disabled={isProcessing}
+                    className={`absolute top-2 right-2 p-1 bg-white/80 rounded-full 
+                        hover:bg-white transition-colors duration-200
+                        ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                     aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 >
                     <Heart
-                        size={config.heartSize}
-                        className={cn(
-                            "transition-colors duration-200",
-                            isFavorite 
-                                ? "fill-red-500 text-red-500" 
-                                : "text-primary hover:text-red-500"
-                        )}
+                        size={config.iconSize + 4}
+                        className={`${isFavorite ? 'fill-[#E83B3B]' : ''} 
+                            text-[#E83B3B] hover:text-red-500 transition-colors duration-200
+                            ${isProcessing ? 'opacity-50' : ''}`}
                     />
                 </button>
             </div>

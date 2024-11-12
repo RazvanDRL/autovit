@@ -128,10 +128,10 @@ export default function ChatPage() {
                     event: 'INSERT',
                     schema: 'public',
                     table: 'messages',
+                    filter: `sender_id=eq.${currentUser.id},receiver_id=eq.${params.id} or sender_id=eq.${params.id},receiver_id=eq.${currentUser.id}`,
                 },
                 (payload) => {
                     if (payload.new.sender_id === currentUser.id || payload.new.receiver_id === currentUser.id) {
-                        console.log('New message:', payload.new.content, 'from', payload.new.sender_id, 'to', payload.new.receiver_id);
                         setMessages(prev => [...prev, payload.new as Message]);
                     }
                 }

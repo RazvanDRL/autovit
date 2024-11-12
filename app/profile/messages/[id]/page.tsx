@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from 'sonner';
 import { User } from '@supabase/supabase-js';
 import Loading from '@/components/loading';
+import { format, isToday, isYesterday } from 'date-fns';
+import DOMPurify from 'dompurify';
+import { z } from 'zod';
+import { Loader2 } from 'lucide-react';
 
 interface Message {
     id: string;
@@ -18,6 +22,30 @@ interface Message {
     read: boolean;
 }
 
+function formatMessageTime(dateString: string) {
+    const date = new Date(dateString);
+
+    if (isToday(date)) {
+        return format(date, 'HH:mm');
+    } else if (isYesterday(date)) {
+        return 'Yesterday ' + format(date, 'HH:mm');
+    } else {
+        return format(date, 'dd/MM/yyyy HH:mm');
+    }
+}
+
+// Message validation schema
+const messageSchema = z.object({
+    content: z.string()
+        .min(1, "Message cannot be empty")
+        .max(2000, "Message is too long (max 2000 characters)")
+        .transform(str => str.trim())
+        // Basic pattern to catch obvious malicious content
+        .refine(str => !/<script\b[^>]*>[\s\S]*?<\/script>/gi.test(str), {
+            message: "Invalid message content"
+        })
+});
+
 export default function ChatPage() {
     const params = useParams<{ id: string }>();
     const [messages, setMessages] = useState<Message[]>([]);
@@ -26,6 +54,40 @@ export default function ChatPage() {
     const [otherUser, setOtherUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [isSending, setIsSending] = useState(false);
+
+    // Add rate limiting
+    const messageTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
+    const messageCount = useRef<number>(0);
+    const lastMessageTime = useRef<number>(Date.now());
+
+    // Rate limiting check
+    const checkRateLimit = () => {
+        const now = Date.now();
+        const timeWindow = 60000; // 1 minute
+        const maxMessages = 30; // Max 30 messages per minute
+
+        if (now - lastMessageTime.current > timeWindow) {
+            messageCount.current = 0;
+        }
+
+        if (messageCount.current >= maxMessages) {
+            toast.error("You're sending messages too quickly. Please wait a moment.");
+            return false;
+        }
+
+        messageCount.current++;
+        lastMessageTime.current = now;
+        return true;
+    };
+
+    // Sanitize message content
+    const sanitizeMessage = (content: string) => {
+        return DOMPurify.sanitize(content, {
+            ALLOWED_TAGS: [], // No HTML tags allowed
+            ALLOWED_ATTR: [], // No attributes allowed
+        }).trim();
+    };
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -66,7 +128,8 @@ export default function ChatPage() {
                 },
                 (payload) => {
                     setMessages(prev => [...prev, payload.new as Message]);
-                    scrollToBottom();
+                    // Scroll to bottom when new message arrives
+                    setTimeout(scrollToBottom, 100); // Small delay to ensure message is rendered
                 }
             )
             .subscribe();
@@ -90,7 +153,8 @@ export default function ChatPage() {
         }
 
         setMessages(data || []);
-        scrollToBottom();
+        // Scroll to bottom after messages are loaded
+        setTimeout(scrollToBottom, 100); // Small delay to ensure messages are rendered
     };
 
     const scrollToBottom = () => {
@@ -99,30 +163,101 @@ export default function ChatPage() {
 
     const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newMessage.trim() || !currentUser) return;
+        if (isSending || !currentUser) return;
 
-        const { error } = await supabase
-            .from('messages')
-            .insert([
-                {
-                    content: newMessage,
-                    sender_id: currentUser.id,
-                    receiver_id: params.id,
-                }
-            ]);
+        try {
+            setIsSending(true);
 
-        if (error) {
+            // Check rate limiting
+            if (!checkRateLimit()) {
+                return;
+            }
+
+            // Validate message content
+            const validationResult = messageSchema.safeParse({ content: newMessage });
+            if (!validationResult.success) {
+                toast.error(validationResult.error.errors[0].message);
+                return;
+            }
+
+            // Sanitize the message content
+            const sanitizedContent = sanitizeMessage(validationResult.data.content);
+
+            // Additional checks
+            if (sanitizedContent.length === 0) {
+                toast.error("Message cannot be empty");
+                return;
+            }
+
+            // Check if user is blocked or blocking
+            const { data: blockStatus } = await supabase
+                .from('user_blocks')
+                .select('*')
+                .or(`blocker_id.eq.${currentUser.id},blocked_id.eq.${currentUser.id}`)
+                .or(`blocker_id.eq.${params.id},blocked_id.eq.${params.id}`)
+                .single();
+
+            if (blockStatus) {
+                toast.error("Unable to send message to this user");
+                return;
+            }
+
+            // Insert the message
+            const { error } = await supabase
+                .from('messages')
+                .insert([
+                    {
+                        content: sanitizedContent,
+                        sender_id: currentUser.id,
+                        receiver_id: params.id,
+                    }
+                ]);
+
+            if (error) {
+                console.error('Error sending message:', error);
+                toast.error('Error sending message');
+                return;
+            }
+
+            setNewMessage('');
+            // Scroll to bottom after sending message
+            setTimeout(scrollToBottom, 100);
+
+        } catch (error) {
+            console.error('Error sending message:', error);
             toast.error('Error sending message');
-            return;
+        } finally {
+            setIsSending(false);
         }
+    };
 
-        setNewMessage('');
+    // Update message display to handle URLs and special characters
+    const formatMessageContent = (content: string) => {
+        // Convert URLs to clickable links
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return content.split(urlRegex).map((part, i) => {
+            if (part.match(urlRegex)) {
+                return (
+                    <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-200 underline"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+            return part;
+        });
     };
 
     if (loading) return <Loading />;
 
     return (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-[50vh] w-[25vw] border-2 border-gray-300 rounded-lg m-24">
             {/* Chat header */}
             <div className="border-b p-4 flex items-center">
                 <Avatar className="h-10 w-10">
@@ -130,7 +265,7 @@ export default function ChatPage() {
                     <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4">
-                    <h2 className="font-semibold">{otherUser?.name || 'User'}</h2>
+                    <h2 className="font-semibold">{otherUser?.email || 'User'}</h2>
                 </div>
             </div>
 
@@ -141,13 +276,21 @@ export default function ChatPage() {
                         key={message.id}
                         className={`flex ${message.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
                     >
-                        <div
-                            className={`max-w-[70%] rounded-lg p-3 ${message.sender_id === currentUser?.id
-                                ? 'bg-blue-500 text-white'
-                                : 'bg-gray-100'
-                                }`}
-                        >
-                            {message.content}
+                        <div className="max-w-[70%]">
+                            <div
+                                className={`rounded-lg p-3 ${message.sender_id === currentUser?.id
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-100'
+                                    }`}
+                            >
+                                {formatMessageContent(message.content)}
+                            </div>
+                            <div
+                                className={`text-xs mt-1 text-gray-500 ${message.sender_id === currentUser?.id ? 'text-right' : 'text-left'
+                                    }`}
+                            >
+                                {formatMessageTime(message.created_at)}
+                            </div>
                         </div>
                     </div>
                 ))}
@@ -161,8 +304,19 @@ export default function ChatPage() {
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
                     className="flex-1"
+                    disabled={isSending}
+                    maxLength={2000}
                 />
-                <Button type="submit">Send</Button>
+                <Button type="submit" disabled={isSending}>
+                    {isSending ? (
+                        <span className="flex items-center">
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Sending
+                        </span>
+                    ) : (
+                        'Send'
+                    )}
+                </Button>
             </form>
         </div>
     );

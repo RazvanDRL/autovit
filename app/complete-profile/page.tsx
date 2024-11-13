@@ -49,6 +49,7 @@ export default function CompleteProfile() {
     useEffect(() => {
         const checkUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
+
             if (!user) {
                 router.replace('/login');
                 return;
@@ -57,11 +58,16 @@ export default function CompleteProfile() {
             // Check if profile is already completed
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('phone, is_company, avatar')
+                .select('avatar, phone, is_company')
                 .eq('id', user.id)
-                .single();
+                .single()
 
-            if (profile?.phone && profile?.is_company && profile?.avatar) {
+            if (!profile) {
+                router.replace('/login');
+                return;
+            }
+
+            if (profile.phone && profile.is_company !== null && profile.avatar) {
                 router.replace('/');
                 return;
             }
@@ -70,7 +76,7 @@ export default function CompleteProfile() {
             setLoading(false);
         };
         checkUser();
-    }, [router]);
+    }, []);
 
     const handleAvatarChange = (files: FileList | null) => {
         if (files && files[0]) {

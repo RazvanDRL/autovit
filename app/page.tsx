@@ -288,7 +288,6 @@ export default function Home() {
                             model={card.model}
                             price={card.price}
                             location={card.location}
-                            date={card.date}
                             year={card.year}
                             km={card.km}
                             fuelType={card.fuelType}

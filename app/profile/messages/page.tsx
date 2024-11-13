@@ -150,7 +150,7 @@ export default function MessagesPage() {
     return (
         <>
             <Navbar />
-            <div className="container min-h-[60vh] mx-auto p-4 max-w-2xl mt-8">
+            <div className="container min-h-[65vh] mx-auto p-4 max-w-2xl mt-8">
                 <h1 className="text-2xl font-bold mb-6">Mesaje</h1>
                 <div className="space-y-2">
                     {conversations.map((conversation) => (

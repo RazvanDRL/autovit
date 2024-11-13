@@ -2,7 +2,6 @@ import { formatNumberWithSpace } from "@/lib/numberFormat"
 import { Heart, Calendar, MapPin, Fuel, Gauge } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { cn } from "@/lib/utils"
 
 interface CardProps {
     id: string
@@ -10,7 +9,6 @@ interface CardProps {
     model: string
     price: number
     location: string
-    date: string
     photo: string
     size?: "small" | "medium" | "large"
     year: number
@@ -27,7 +25,6 @@ export default function Card({
     model,
     price,
     location,
-    date,
     photo,
     size = "medium",
     year,
@@ -69,8 +66,7 @@ export default function Card({
     return (
         <Link
             href={`/a/${id}`}
-            className="bg-white shadow-lg transition-all duration-300 rounded-lg overflow-hidden flex flex-col
-                hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]"
+            className="bg-white shadow-lg border border-gray-200 transition-all duration-300 rounded-lg overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]"
             style={{ width: config.width }}
         >
             <div className="relative" style={{ height: config.imageHeight }}>
@@ -136,7 +132,6 @@ export default function Card({
                         <MapPin size={config.iconSize} className="mr-1 shrink-0" />
                         <p className="truncate">{location}</p>
                     </div>
-                    <time className="shrink-0 ml-2">{date}</time>
                 </div>
             </div>
         </Link>

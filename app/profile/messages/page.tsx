@@ -8,6 +8,8 @@ import { formatTimeAgo } from '@/lib/timeFormat';
 import Loading from '@/components/loading';
 import Navbar from '@/components/navbar';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import Footer from '@/components/footer';
 
 interface Conversation {
     id: string;
@@ -26,6 +28,7 @@ interface Conversation {
 }
 
 export default function MessagesPage() {
+    const router = useRouter();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -33,11 +36,17 @@ export default function MessagesPage() {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                router.replace('/login');
+                return;
+            }
+
             setCurrentUser(user);
         };
 
         fetchCurrentUser();
-    }, []);
+    }, [router]);
 
     useEffect(() => {
         if (!currentUser) return;
@@ -136,15 +145,12 @@ export default function MessagesPage() {
         };
     }, [currentUser]);
 
-    console.log(conversations);
-
-
     if (loading) return <Loading />;
 
     return (
         <>
             <Navbar />
-            <div className="container mx-auto p-4 max-w-2xl mt-8">
+            <div className="container min-h-[60vh] mx-auto p-4 max-w-2xl mt-8">
                 <h1 className="text-2xl font-bold mb-6">Mesaje</h1>
                 <div className="space-y-2">
                     {conversations.map((conversation) => (
@@ -176,7 +182,9 @@ export default function MessagesPage() {
                                 <div className="flex items-center space -x-2">
                                     <p className="text-sm text-gray-500">{formatTimeAgo(conversation.last_message.created_at)}</p>
                                     {conversation.unread_count > 0 && (
-                                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        <div className="w-8 h-8 ml-2 bg-red-500 text-white text-xs font-bold rounded-lg flex items-center justify-center">
+                                            {conversation.unread_count}
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -184,6 +192,7 @@ export default function MessagesPage() {
                     ))}
                 </div>
             </div>
+            <Footer />
         </>
     );
 }

@@ -75,6 +75,21 @@ export default function Navbar() {
     }
 
     useEffect(() => {
+        async function getFavoritesCount() {
+            if (user) {
+                const { count, error } = await supabase
+                    .from('favorites')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                if (error) {
+                    console.error('Error fetching favorites:', error);
+                    return;
+                }
+
+                setFavoritesCount(count || 0);
+            }
+        }
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
@@ -93,23 +108,7 @@ export default function Navbar() {
         return () => {
             window.removeEventListener(FAVORITES_UPDATED_EVENT, getFavoritesCount);
         };
-    }, []); // Add empty dependency array
-
-    async function getFavoritesCount() {
-        if (user) {
-            const { count, error } = await supabase
-                .from('favorites')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id);
-
-            if (error) {
-                console.error('Error fetching favorites:', error);
-                return;
-            }
-
-            setFavoritesCount(count || 0);
-        }
-    }
+    }, [user]);
 
     const handleAccountClick = () => {
         if (!user) {
@@ -121,7 +120,7 @@ export default function Navbar() {
         <div className="w-full top-0 left-0 right-0 z-50 bg-white shadow-md border-b border-gray-200 sticky">
             <div className="container mx-auto flex justify-between items-center py-2 sm:py-3 px-4 sm:px-8 md:px-16 bg-inherit text-black">
                 <Link href="/" className="flex-shrink-0">
-                    <Image src={Logo} alt="Logo" width={90} height={90} className="w-[80px] sm:w-[90px]" />
+                    <Image src={Logo} alt="Logo" width={80} height={90} className="w-[80px] sm:w-[90px]" />
                 </Link>
 
                 <div className="flex items-center gap-2 sm:gap-4">
@@ -135,7 +134,7 @@ export default function Navbar() {
                         </Button>
                     </Link>
 
-                    <Link href="/favourites">
+                    <Link href="/profile/favorites">
                         <Button variant="ghost" size="icon" className="w-9 h-9 sm:w-10 sm:h-10 relative">
                             <Heart className="text-black stroke-[2.2] h-5 w-5" />
                             {favoritesCount > 0 && (

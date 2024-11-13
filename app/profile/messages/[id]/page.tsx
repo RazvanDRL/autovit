@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,6 +71,7 @@ export default function ChatPage() {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
+    const router = useRouter();
 
     // Add rate limiting
     const messageTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
@@ -111,6 +112,11 @@ export default function ChatPage() {
             const { data: { user } } = await supabase.auth.getUser();
             setCurrentUser(user);
 
+            if (!user) {
+                router.replace('/login');
+                return;
+            }
+
             // Get other user's profile
             const { data: otherUserData } = await supabase
                 .from('profiles')
@@ -123,7 +129,7 @@ export default function ChatPage() {
         };
 
         fetchUsers();
-    }, [params.id]);
+    }, [currentUser, params.id, router]);
 
     useEffect(() => {
         if (messages.length > 0) {
@@ -149,6 +155,28 @@ export default function ChatPage() {
         };
 
         markMessagesAsRead();
+
+        const fetchMessages = async () => {
+            if (!currentUser) return;
+
+            const { data, error } = await supabase
+                .from('messages')
+                .select('*')
+                .or(
+                    `and(sender_id.eq.${currentUser.id},receiver_id.eq.${params.id}),` +
+                    `and(sender_id.eq.${params.id},receiver_id.eq.${currentUser.id})`
+                )
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error('Error fetching messages:', error);
+                toast.error('Error fetching messages');
+                return;
+            }
+
+            setMessages(data || []);
+        };
+
         fetchMessages();
 
         const channel = supabase
@@ -184,28 +212,8 @@ export default function ChatPage() {
             supabase.removeChannel(channel);
             supabase.removeChannel(channel2);
         };
-    }, [params.id, currentUser]);
+    }, [currentUser, params.id, router]);
 
-    const fetchMessages = async () => {
-        if (!currentUser) return;
-
-        const { data, error } = await supabase
-            .from('messages')
-            .select('*')
-            .or(
-                `and(sender_id.eq.${currentUser.id},receiver_id.eq.${params.id}),` +
-                `and(sender_id.eq.${params.id},receiver_id.eq.${currentUser.id})`
-            )
-            .order('created_at', { ascending: true });
-
-        if (error) {
-            console.error('Error fetching messages:', error);
-            toast.error('Error fetching messages');
-            return;
-        }
-
-        setMessages(data || []);
-    };
 
     const jumpToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
@@ -334,7 +342,7 @@ export default function ChatPage() {
                 }
             }
         });
-    }, [messages]);
+    }, [messages, currentUser, params.id, signedUrls]);
 
     // Update message display to handle URLs and special characters
     const formatMessageContent = (message: Message) => {

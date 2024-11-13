@@ -120,7 +120,7 @@ export default function FavoritesPage() {
     return (
         <>
             <Navbar />
-            <div className="container mx-auto p-4 mt-8">
+            <div className="container mx-auto max-w-5xl p-4 mt-8">
                 <Toaster />
                 <h1 className="text-2xl font-bold mb-6">Anunțurile mele favorite</h1>
                 {favorites.length === 0 ? (

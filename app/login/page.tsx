@@ -83,7 +83,7 @@ export default function Login() {
         <Link href="/" className="absolute top-8 left-8">
           <Button variant="ghost">
             <Home className="h-4 w-4 mr-2" />
-            Home
+            Acasa
           </Button>
         </Link>
         <Link href="/signup" className="absolute top-8 right-8">
@@ -130,7 +130,7 @@ export default function Login() {
               <Input
                 id="email"
                 type="email"
-                placeholder="john@doe.com"
+                placeholder="email@exemplu.com"
                 value={email}
                 required
                 onChange={(e) => setEmail(e.target.value)}
@@ -142,7 +142,7 @@ export default function Login() {
                 </Button>
               ) : (
                 <Button type="submit" className="w-full bg-[#007bff] text-white" disabled={loading}>
-                  {loading ? "Se trimite link-ul..." : "Trimite link de logare"}
+                  {loading ? "Se trimite email-ul..." : "Trimite email de logare"}
                 </Button>
               )}
               {isEmailSent && (

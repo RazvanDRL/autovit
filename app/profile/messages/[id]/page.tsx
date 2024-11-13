@@ -12,6 +12,7 @@ import { format, isToday, isYesterday } from 'date-fns';
 import DOMPurify from 'dompurify';
 import { z } from 'zod';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface Message {
     id: string;
@@ -20,6 +21,12 @@ interface Message {
     receiver_id: string;
     created_at: string;
     read: boolean;
+}
+
+interface UserProfile {
+    id: string;
+    name: string;
+    avatar: string;
 }
 
 function formatMessageTime(dateString: string) {
@@ -50,7 +57,7 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [otherUser, setOtherUser] = useState<any>(null);
+    const [otherUser, setOtherUser] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isSending, setIsSending] = useState(false);
@@ -275,20 +282,27 @@ export default function ChatPage() {
     if (loading) return <Loading />;
 
     return (
-        <div className="flex flex-col h-[600px] w-[400px] border-2 border-gray-300 rounded-lg m-24">
+        <div className="flex flex-col h-[600px] w-[400px] border-2 border-input rounded-lg m-24">
             {/* Chat header */}
-            <div className="border-b p-4 flex items-center">
+            <div className="border-b border-input p-4 flex items-center bg-background">
                 <Avatar className="h-10 w-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" />
-                    <AvatarFallback>{otherUser?.email?.[0] || 'U'}</AvatarFallback>
+                    <Image
+                        src={otherUser?.avatar || ''}
+                        alt={otherUser?.name || ''}
+                        width={40}
+                        height={40}
+                        className="rounded-full blur-sm transition-all duration-300"
+                        onLoadingComplete={(image) => image.classList.remove('blur-sm')}
+                    />
+                    <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4">
-                    <h2 className="font-semibold">{otherUser?.email || 'Utilizator'}</h2>
+                    <h2 className="font-semibold">{otherUser?.name || 'Utilizator'}</h2>
                 </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
                 {messages.map((message) => (
                     <div
                         key={message.id}
@@ -297,19 +311,19 @@ export default function ChatPage() {
                         <div className="max-w-[70%]">
                             <div
                                 className={`rounded-lg p-3 ${message.sender_id === currentUser?.id
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-foreground'
                                     }`}
                             >
                                 {formatMessageContent(message.content)}
                             </div>
                             <div
-                                className={`text-xs mt-1 text-gray-500 ${message.sender_id === currentUser?.id ? 'text-right' : 'text-left'
+                                className={`text-xs mt-1 text-muted-foreground ${message.sender_id === currentUser?.id ? 'text-right' : 'text-left'
                                     }`}
                             >
                                 {formatMessageTime(message.created_at)}
                                 {message.sender_id === currentUser?.id && (
-                                    <span className="ml-2">
+                                    <span className="ml-2 text-muted-foreground">
                                         {message.read ? 'Vazut' : 'Trimis'}
                                     </span>
                                 )}
@@ -321,7 +335,7 @@ export default function ChatPage() {
             </div>
 
             {/* Message input */}
-            <form onSubmit={sendMessage} className="border-t p-4 flex gap-2">
+            <form onSubmit={sendMessage} className="border-t border-input p-4 flex gap-2 bg-background">
                 <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}

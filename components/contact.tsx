@@ -25,11 +25,6 @@ export const ContactCard = (props: ContactCardProps) => {
         window.open(`https://wa.me/${user_phone.replace(/\D/g, '')}`, '_blank');
     };
 
-    const handleInHouseChat = () => {
-        // Implement in-house chat functionality
-        console.log('Open in-house chat');
-    };
-
     return (
         <div className="p-4 bg-white border rounded-lg shadow-sm lg:rounded-lg lg:shadow-sm lg:border lg:p-4 fixed-bottom">
             <div className="hidden lg:flex items-center justify-between">
@@ -71,9 +66,11 @@ export const ContactCard = (props: ContactCardProps) => {
                     <Button onClick={handleWhatsApp} variant="outline" className="flex-1 hover:scale-105 transition-all duration-300">
                         <Image src={WhatsAppLogo} alt="WhatsApp" height={20} width={20} className="mr-2" /> WhatsApp
                     </Button>
-                    <Button onClick={handleInHouseChat} variant="outline" className="flex-1 hover:scale-105 transition-all duration-300">
-                        <MessageSquareMore className="h-5 w-4 mr-2" /> Contactează
-                    </Button>
+                    <Link href={`/profile/messages/${user_id}`}>
+                        <Button variant="outline" className="flex-1 hover:scale-105 transition-all duration-300">
+                            <MessageSquareMore className="h-5 w-4 mr-2" /> Contactează
+                        </Button>
+                    </Link>
                 </div>
             </div>
         </div>

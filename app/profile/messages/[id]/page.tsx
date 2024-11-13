@@ -15,6 +15,7 @@ import { Loader2, Paperclip, X, FileIcon, ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { v4 as uuidv4 } from 'uuid';
+import Navbar from '@/components/navbar';
 
 interface Message {
     id: string;
@@ -181,6 +182,7 @@ export default function ChatPage() {
 
         return () => {
             supabase.removeChannel(channel);
+            supabase.removeChannel(channel2);
         };
     }, [params.id, currentUser]);
 
@@ -347,6 +349,7 @@ export default function ChatPage() {
                     )}
                     {isImage ? (
                         <div className="relative w-48 h-48">
+                            <div className="absolute inset-0 bg-muted/10 animate-pulse rounded-md" />
                             <Link href={signedUrls[message.id]} target="_blank" rel="noopener noreferrer">
                                 <Image
                                     src={signedUrls[message.id]}
@@ -354,8 +357,11 @@ export default function ChatPage() {
                                     quality={10}
                                     fill
                                     priority
-                                    className="object-cover rounded-md blur-sm transition-all duration-300"
-                                    onLoadingComplete={(image) => image.classList.remove('blur-sm')}
+                                    className="object-cover rounded-md opacity-0 transition-opacity duration-300"
+                                    onLoadingComplete={(image) => {
+                                        image.classList.remove('opacity-0');
+                                        image.classList.add('opacity-100');
+                                    }}
                                 />
                             </Link>
                         </div>
@@ -402,116 +408,119 @@ export default function ChatPage() {
     if (loading) return <Loading />;
 
     return (
-        <div className="flex flex-col h-[900px] w-[700px] border-2 border-input rounded-lg m-24">
-            {/* Chat header */}
-            <div className="border-b border-input p-4 flex items-center bg-background">
-                <Avatar className="h-10 w-10">
-                    <Image
-                        src={otherUser?.avatar || ''}
-                        alt={otherUser?.name || ''}
-                        width={40}
-                        height={40}
-                        className="rounded-full blur-sm transition-all duration-300"
-                        onLoadingComplete={(image) => image.classList.remove('blur-sm')}
-                    />
-                    <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
-                </Avatar>
-                <div className="ml-4">
-                    <h2 className="font-semibold">{otherUser?.name || 'Utilizator'}</h2>
+        <>
+            <Navbar />
+            <div className="flex flex-col h-[700px] w-[600px] border-2 border-input rounded-lg m-24">
+                {/* Chat header */}
+                <div className="border-b border-input p-4 flex items-center bg-background">
+                    <Avatar className="h-10 w-10">
+                        <Image
+                            src={otherUser?.avatar || ''}
+                            alt={otherUser?.name || ''}
+                            width={40}
+                            height={40}
+                            className="rounded-full blur-sm transition-all duration-300"
+                            onLoadingComplete={(image) => image.classList.remove('blur-sm')}
+                        />
+                        <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="ml-4">
+                        <h2 className="font-semibold">{otherUser?.name || 'Utilizator'}</h2>
+                    </div>
                 </div>
-            </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
-                {messages.map((message) => (
-                    <div
-                        key={message.id}
-                        className={`flex ${message.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
-                    >
-                        <div className="max-w-[70%]">
-                            <div
-                                className={`rounded-lg p-3 ${message.sender_id === currentUser?.id
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted text-foreground'
-                                    }`}
-                            >
-                                {formatMessageContent(message)}
-                            </div>
-                            <div
-                                className={`text-xs mt-1 text-muted-foreground ${message.sender_id === currentUser?.id ? 'text-right' : 'text-left'
-                                    }`}
-                            >
-                                {formatMessageTime(message.created_at)}
-                                {message.sender_id === currentUser?.id && (
-                                    <span className="ml-2 text-muted-foreground">
-                                        {message.read ? 'Vazut' : 'Trimis'}
-                                    </span>
-                                )}
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
+                    {messages.map((message) => (
+                        <div
+                            key={message.id}
+                            className={`flex ${message.sender_id === currentUser?.id ? 'justify-end' : 'justify-start'}`}
+                        >
+                            <div className="max-w-[70%]">
+                                <div
+                                    className={`rounded-lg p-3 ${message.sender_id === currentUser?.id
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted text-foreground'
+                                        }`}
+                                >
+                                    {formatMessageContent(message)}
+                                </div>
+                                <div
+                                    className={`text-xs mt-1 text-muted-foreground ${message.sender_id === currentUser?.id ? 'text-right' : 'text-left'
+                                        }`}
+                                >
+                                    {formatMessageTime(message.created_at)}
+                                    {message.sender_id === currentUser?.id && (
+                                        <span className="ml-2 text-muted-foreground">
+                                            {message.read ? 'Vazut' : 'Trimis'}
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
 
-            {/* Message input */}
-            <form onSubmit={sendMessage} className="border-t border-input p-4 space-y-2 bg-background">
-                {selectedFile && (
-                    <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        {selectedFile.type.startsWith('image/') ? (
-                            <ImageIcon className="h-4 w-4" />
-                        ) : (
-                            <FileIcon className="h-4 w-4" />
-                        )}
-                        <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                {/* Message input */}
+                <form onSubmit={sendMessage} className="border-t border-input p-4 space-y-2 bg-background">
+                    {selectedFile && (
+                        <div className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                            {selectedFile.type.startsWith('image/') ? (
+                                <ImageIcon className="h-4 w-4" />
+                            ) : (
+                                <FileIcon className="h-4 w-4" />
+                            )}
+                            <span className="text-sm truncate flex-1">{selectedFile.name}</span>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={removeSelectedFile}
+                                className="h-8 w-8 p-0"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    )}
+                    <div className="flex gap-2">
+                        <Input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder="Scrie un mesaj..."
+                            className="flex-1"
+                            disabled={isSending}
+                            maxLength={2000}
+                        />
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            className="hidden"
+                            accept="image/*,.pdf,.doc,.docx,.txt"
+                        />
                         <Button
                             type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={removeSelectedFile}
-                            className="h-8 w-8 p-0"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isSending}
                         >
-                            <X className="h-4 w-4" />
+                            <Paperclip className="h-4 w-4" />
+                        </Button>
+                        <Button type="submit" disabled={isSending || isUploading}>
+                            {isSending || isUploading ? (
+                                <span className="flex items-center">
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    {isUploading ? 'Se încarcă' : 'Se trimite'}
+                                </span>
+                            ) : (
+                                'Trimite'
+                            )}
                         </Button>
                     </div>
-                )}
-                <div className="flex gap-2">
-                    <Input
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Scrie un mesaj..."
-                        className="flex-1"
-                        disabled={isSending}
-                        maxLength={2000}
-                    />
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileSelect}
-                        className="hidden"
-                        accept="image/*,.pdf,.doc,.docx,.txt"
-                    />
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isSending}
-                    >
-                        <Paperclip className="h-4 w-4" />
-                    </Button>
-                    <Button type="submit" disabled={isSending || isUploading}>
-                        {isSending || isUploading ? (
-                            <span className="flex items-center">
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                {isUploading ? 'Se încarcă' : 'Se trimite'}
-                            </span>
-                        ) : (
-                            'Trimite'
-                        )}
-                    </Button>
-                </div>
-            </form>
-        </div>
+                </form>
+            </div>
+        </>
     );
 }

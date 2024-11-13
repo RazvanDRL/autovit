@@ -78,7 +78,7 @@ export default function Navbar() {
         const getUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
-            
+
             // Only fetch favorites count if we have a user
             if (user) {
                 getFavoritesCount();
@@ -125,7 +125,7 @@ export default function Navbar() {
                 </Link>
 
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <Link href="/messages">
+                    <Link href="/profile/messages">
                         <Button variant="ghost" size="sm" className="hidden sm:flex items-center justify-center">
                             <MessageCircle className="text-black mr-2 stroke-[2.2] h-5 w-5" />
                             <span className="text-black font-[600]">Mesaje</span>

@@ -42,7 +42,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${BASE_URL}/`,
+        emailRedirectTo: `${BASE_URL}/complete-profile`,
       },
     });
     if (error) {
@@ -59,7 +59,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${BASE_URL}/`,
+        redirectTo: `${BASE_URL}/complete-profile`,
       },
     });
     if (error) {

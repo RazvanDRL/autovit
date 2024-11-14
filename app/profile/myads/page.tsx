@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
-import Card from '@/components/card';
 import Navbar from '@/components/navbar';
 import { toast, Toaster } from 'sonner';
 import Loading from '@/components/loading';

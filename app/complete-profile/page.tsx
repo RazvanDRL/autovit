@@ -76,7 +76,7 @@ export default function CompleteProfile() {
             setLoading(false);
         };
         checkUser();
-    }, []);
+    }, [router]);
 
     const handleAvatarChange = (files: FileList | null) => {
         if (files && files[0]) {

@@ -211,7 +211,7 @@ export default function Home() {
             <Navbar />
             <Toaster />
             <main className="mt-16 lg:max-w-6xl mx-auto">
-                <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm">
+                <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm border border-gray-100">
                     <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         <div className="col-span-2">
                             <DropdownSelect

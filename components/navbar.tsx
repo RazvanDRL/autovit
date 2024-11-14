@@ -174,7 +174,7 @@ export default function Navbar() {
                                                 <span>Profil</span>
                                             </DropdownMenuItem>
                                         </Link>
-                                        <Link href="/myads">
+                                        <Link href="/profile/myads">
                                             <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
                                                 <CreditCard className="mr-2 h-4 w-4" />
                                                 <span>Anunțurile mele</span>

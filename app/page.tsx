@@ -6,7 +6,6 @@ import DropdownSelect from '@/components/dropdownSelect';
 import Card from '@/components/card';
 import { supabase } from '@/lib/supabaseClient';
 import { carBrands } from '@/lib/carBrands';
-import { carModels } from '@/lib/carModels';
 import { years } from '@/lib/years';
 import { colors } from '@/lib/colors';
 import { useRouter } from 'next/navigation';
@@ -59,6 +58,7 @@ export default function Home() {
     const [processingFavorites, setProcessingFavorites] = useState<Set<string>>(new Set());
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
+    const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
@@ -103,6 +103,43 @@ export default function Home() {
         fetchInitialData();
     }, []);
 
+    useEffect(() => {
+        const fetchModels = async () => {
+            if (!brand) {
+                setAvailableModels([]);
+                return;
+            }
+
+            // Find the label from carBrands
+            const selectedBrand = carBrands.find(b => b.value === brand);
+            if (!selectedBrand) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('models')
+                    .select('data')
+                    .eq('value', selectedBrand.label)
+                    .single();
+
+                if (error) throw error;
+
+                if (data && data.data) {
+                    const modelOptions = data.data.map((model: string) => ({
+                        value: model,
+                        label: model
+                    }));
+                    setAvailableModels(modelOptions);
+                }
+            } catch (error) {
+                console.error('Error fetching models:', error);
+                toast.error("Couldn't load models");
+                setAvailableModels([]);
+            }
+        };
+
+        fetchModels();
+    }, [brand]);
+
     const loadMore = async () => {
         if (!hasMore || loading) return;
 
@@ -131,8 +168,13 @@ export default function Home() {
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // route is /search?brand=brand&model=model&year=year&color=color&fuelType=fuelType&transmission=transmission
-        const route = `/${brand}/${model}`;
+
+        // Get the labels instead of values
+        const brandLabel = carBrands.find(b => b.value === brand)?.label || '';
+        const modelLabel = availableModels.find(m => m.value === model)?.label || '';
+
+        // Use the labels in the route
+        const route = `/${brandLabel}/${modelLabel}`;
         router.push(route);
     };
 
@@ -224,7 +266,7 @@ export default function Home() {
                         </div>
                         <div className="col-span-2">
                             <DropdownSelect
-                                options={brand ? carModels[brand as keyof typeof carModels].map(model => ({ value: model, label: model })) : []}
+                                options={availableModels}
                                 placeholder="Model"
                                 value={model}
                                 onChange={setModel}

@@ -37,6 +37,7 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
                 <div className="flex flex-col gap-2 w-full">
                     <label htmlFor={`dropdown-${label}`} className="text-sm font-[400]">{label}</label>
                     <ButtonDropdown
+                        type="button"
                         id={`dropdown-${label}`}
                         ref={buttonRef}
                         variant="outline"
@@ -46,7 +47,7 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
                         className={cn("w-full text-md justify-between bg-[#EBECEF] border-[#EBECEF] rounded-sm font-[400]", className)}
                         disabled={disabled}
                     >
-                        {options.find(option => option.value === value)?.label || placeholder}
+                        {value || placeholder}
                         <ChevronDown className="ml-2 h-8 w-8 shrink-0" />
                     </ButtonDropdown>
                 </div>
@@ -60,7 +61,7 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
                             {options.map((option) => (
                                 <CommandItem
                                     key={option.value}
-                                    value={option.value}
+                                    value={option.label}
                                     onSelect={(currentValue) => {
                                         onChange(currentValue === value ? "" : currentValue);
                                         setOpen(false);
@@ -69,7 +70,7 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
                                     <Check
                                         className={cn(
                                             "mr-2 h-4 w-4",
-                                            value === option.value ? "opacity-100" : "opacity-0"
+                                            value === option.label ? "opacity-100" : "opacity-0"
                                         )}
                                     />
                                     {option.label}

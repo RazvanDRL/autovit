@@ -5,6 +5,30 @@ import { carBrands } from '@/lib/carBrands';
 import { years } from '@/lib/years';
 import { colors } from '@/lib/colors';
 
+const prices = [
+    { value: "1000", label: "1000 EUR" },
+    { value: "2000", label: "2000 EUR" },
+    { value: "3000", label: "3000 EUR" },
+    { value: "4000", label: "4000 EUR" },
+    { value: "5000", label: "5000 EUR" },
+    { value: "6000", label: "6000 EUR" },
+    { value: "7000", label: "7000 EUR" },
+    { value: "8000", label: "8000 EUR" },
+    { value: "9000", label: "9000 EUR" },
+    { value: "10000", label: "10000 EUR" },
+    { value: "15000", label: "15000 EUR" },
+    { value: "20000", label: "20000 EUR" },
+    { value: "25000", label: "25000 EUR" },
+    { value: "30000", label: "30000 EUR" },
+    { value: "40000", label: "40000 EUR" },
+    { value: "50000", label: "50000 EUR" },
+    { value: "60000", label: "60000 EUR" },
+    { value: "70000", label: "70000 EUR" },
+    { value: "80000", label: "80000 EUR" },
+    { value: "90000", label: "90000 EUR" },
+    { value: "100000", label: "100000 EUR" },
+];
+
 const fuelTypes = [
     { value: "Petrol", label: "Petrol" },
     { value: "Diesel", label: "Diesel" },
@@ -18,19 +42,29 @@ const transmissions = [
     { value: "Semi-automatic", label: "Semi-automatic" },
 ];
 
+const bodyTypes = [
+    { value: "Sedan", label: "Sedan" },
+    { value: "Hatchback", label: "Hatchback" },
+    { value: "SUV", label: "SUV" },
+    { value: "Coupe", label: "Coupe" },
+    { value: "Convertible", label: "Convertible" },
+    { value: "Wagon", label: "Wagon" },
+    { value: "Other", label: "Other" },
+];
+
 interface CarSearchProps {
     brand: string;
     setBrand: (value: string) => void;
     model: string;
     setModel: (value: string) => void;
+    price: string;
+    setPrice: (value: string) => void;
     year: string;
     setYear: (value: string) => void;
-    color: string;
-    setColor: (value: string) => void;
     fuelType: string;
     setFuelType: (value: string) => void;
-    transmission: string;
-    setTransmission: (value: string) => void;
+    bodyType: string;
+    setBodyType: (value: string) => void;
     availableModels: { value: string, label: string }[];
     onSubmit: (e: React.FormEvent) => void;
 }
@@ -40,14 +74,14 @@ export default function CarSearch({
     setBrand,
     model,
     setModel,
+    price,
+    setPrice,
     year,
     setYear,
-    color,
-    setColor,
     fuelType,
     setFuelType,
-    transmission,
-    setTransmission,
+    bodyType,
+    setBodyType,
     availableModels,
     onSubmit
 }: CarSearchProps) {
@@ -75,8 +109,17 @@ export default function CarSearch({
                 </div>
                 <div className="col-span-1">
                     <DropdownSelect
-                        options={years}
+                        options={prices}
                         placeholder="Pret pana la"
+                        value={price}
+                        onChange={setPrice}
+                        className="p-6"
+                    />
+                </div>
+                <div className="col-span-1">
+                    <DropdownSelect
+                        options={years}
+                        placeholder="Anul de la"
                         value={year}
                         onChange={setYear}
                         className="p-6"
@@ -84,28 +127,19 @@ export default function CarSearch({
                 </div>
                 <div className="col-span-1">
                     <DropdownSelect
-                        options={colors}
-                        placeholder="Anul de la"
-                        value={color}
-                        onChange={setColor}
+                        options={bodyTypes}
+                        placeholder="Tip caroserie"
+                        value={bodyType}
+                        onChange={setBodyType}
                         className="p-6"
                     />
                 </div>
                 <div className="col-span-1">
                     <DropdownSelect
                         options={fuelTypes}
-                        placeholder="Tip caroserie"
+                        placeholder="Combustibil"
                         value={fuelType}
                         onChange={setFuelType}
-                        className="p-6"
-                    />
-                </div>
-                <div className="col-span-1">
-                    <DropdownSelect
-                        options={transmissions}
-                        placeholder="Combustibil"
-                        value={transmission}
-                        onChange={setTransmission}
                         className="p-6"
                     />
                 </div>

@@ -11,6 +11,7 @@ interface ContactCardProps {
     user_phone: string;
     user_full_name: string;
     is_company: boolean;
+    user_avatar?: string;
 }
 
 export const ContactCard = (props: ContactCardProps) => {

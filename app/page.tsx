@@ -49,9 +49,11 @@ export default function Home() {
     const [brand, setBrand] = useState("");
     const [model, setModel] = useState("");
     const [year, setYear] = useState("");
+    const [price, setPrice] = useState("");
     const [color, setColor] = useState("");
     const [fuelType, setFuelType] = useState("");
     const [transmission, setTransmission] = useState("");
+    const [bodyType, setBodyType] = useState("");
     const [cards, setCards] = useState<Ad[]>([]);
     const [loading, setLoading] = useState(false);
     const [favorites, setFavorites] = useState<string[]>([]);
@@ -184,11 +186,35 @@ export default function Home() {
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Get the labels for the URL
+        // Get the labels for the URL path
         const brandLabel = carBrands.find(b => b.label === brand)?.label || '';
         const modelLabel = availableModels.find(m => m.value === model)?.label || '';
 
-        const route = `/${brandLabel}/${encodeURIComponent(modelLabel)}`;
+        // Create base path
+        const basePath = `/${brandLabel}/${encodeURIComponent(modelLabel)}`;
+
+        // Create URLSearchParams object for query parameters
+        const searchParams = new URLSearchParams();
+
+        // Define parameters mapping
+        const params: { [key: string]: string | undefined } = {
+            price: price.replace(/[^0-9]/g, ''),
+            year: year,
+            body_type: bodyType,
+            fuel_type: fuelType
+        };
+
+        // Add non-empty parameters to URLSearchParams
+        Object.entries(params).forEach(([key, value]) => {
+            if (value) {
+                searchParams.append(key, value);
+            }
+        });
+
+        // Construct final URL
+        const queryString = searchParams.toString();
+        const route = queryString ? `${basePath}?${queryString}` : basePath;
+
         router.push(route);
     };
 
@@ -271,14 +297,14 @@ export default function Home() {
                     setBrand={setBrand}
                     model={model}
                     setModel={setModel}
+                    price={price}
+                    setPrice={setPrice}
                     year={year}
                     setYear={setYear}
-                    color={color}
-                    setColor={setColor}
                     fuelType={fuelType}
                     setFuelType={setFuelType}
-                    transmission={transmission}
-                    setTransmission={setTransmission}
+                    bodyType={bodyType}
+                    setBodyType={setBodyType}
                     availableModels={availableModels}
                     onSubmit={handleSearch}
                 />

@@ -6,7 +6,7 @@ import * as z from 'zod';
 
 import { toast, Toaster } from 'sonner';
 
-import { Check, ChevronDown, Loader2, Plus, X } from "lucide-react"
+import { Check, ChevronDown, CirclePlus, Loader2, Plus, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -285,7 +285,7 @@ export default function CarAdForm() {
                     <div className="max-w-4xl mx-auto bg-white rounded-sm">
                         <Form {...form}>
                             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                                <h1 className='text-[32px] font-bold'>
+                                <h1 className='text-[28px] sm:text-[32px] font-bold'>
                                     Adauga un anunt nou
                                 </h1>
 
@@ -297,10 +297,10 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block text-sm font-semibold text-gray-600">VIN</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center w-2/3'>
+                                                <div className='flex items-center w-full sm:w-2/3'>
                                                     <Input
                                                         placeholder="Introduceți VIN-ul..."
-                                                        className="p-6 w-full text-md bg-[#EBECEF] rounded-sm border-none"
+                                                        className="p-4 sm:p-6 w-full text-md bg-[#EBECEF] rounded-sm border-none"
                                                         {...field}
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
@@ -319,7 +319,7 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Marca</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center w-2/3'>
+                                                <div className='flex items-center w-full sm:w-2/3'>
                                                     <DropdownSelect
                                                         options={carBrands}
                                                         placeholder="Selecteaza o marca"
@@ -352,7 +352,7 @@ export default function CarAdForm() {
                                                                 }
                                                             }
                                                         }}
-                                                        className="mt-1 p-6 w-full"
+                                                        className="mt-1 p-4 sm:p-6 w-full"
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
@@ -370,7 +370,7 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Model</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center w-2/3'>
+                                                <div className='flex items-center w-full sm:w-2/3'>
                                                     <DropdownSelect
                                                         options={availableModels}
                                                         placeholder="Selecteaza un model"
@@ -383,7 +383,7 @@ export default function CarAdForm() {
                                                                 form.setValue('model_id', selectedModel.id);
                                                             }
                                                         }}
-                                                        className="mt-1 p-6 w-full"
+                                                        className="mt-1 p-4 sm:p-6 w-full"
                                                         disabled={!form.watch("brand")}
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
@@ -395,21 +395,21 @@ export default function CarAdForm() {
                                 />
 
                                 {/* Year */}
-                                <div className='flex justify-between w-2/3 gap-12'>
+                                <div className='flex justify-between w-full sm:w-2/3 gap-4 sm:gap-12'>
                                     <FormField
                                         control={form.control}
                                         name="year"
                                         render={({ field }) => (
-                                            <FormItem className="w-1/2">
+                                            <FormItem className="w-full sm:w-1/2">
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Anul fabricatiei</FormLabel>
                                                 <FormControl>
-                                                    <div className='flex items-center w-2/3'>
+                                                    <div className='flex items-center w-full sm:w-2/3'>
                                                         <DropdownSelect
                                                             options={years.map((year) => ({ value: year.toString(), label: year.toString() }))}
                                                             placeholder="Selecteaza un an"
                                                             value={field.value.toString()}
                                                             onChange={(value) => field.onChange(parseInt(value, 10))}
-                                                            className="mt-1 p-6 w-full"
+                                                            className="mt-1 p-4 sm:p-6 w-full"
                                                         />
                                                         <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                     </div>
@@ -429,12 +429,12 @@ export default function CarAdForm() {
                                             <FormLabel className='block text-sm font-semibold text-gray-600'>Km</FormLabel>
                                             <FormControl>
                                                 <div className='flex items-center w-2/3'>
-                                                    <div className='relative w-1/3'>
+                                                    <div className='relative w-full sm:w-1/3'>
                                                         <InputCustom
                                                             id="km"
                                                             type="number"
                                                             placeholder="0"
-                                                            className="p-6 pr-11"
+                                                            className="p-4 sm:p-6 pr-11 w-full"
                                                             {...field}
                                                             value={field.value || ''}
                                                             onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
@@ -627,11 +627,14 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600 mb-2">Fotografii (minim 3)</FormLabel>
                                             <FormControl>
-                                                <div className="flex flex-wrap gap-4">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                                     {field.value.map((photo, index) => (
                                                         <div
                                                             key={index}
-                                                            className={`relative ${index === 0 ? 'w-[24rem] h-[18rem]' : 'w-[11rem] h-[8.5rem]'} border rounded-md overflow-hidden cursor-move`}
+                                                            className={`relative ${index === 0
+                                                                ? 'col-span-1 sm:col-span-2 lg:col-span-3 h-[200px] sm:h-[300px]'
+                                                                : 'h-[150px] sm:h-[200px]'
+                                                                } border rounded-md overflow-hidden cursor-move`}
                                                             draggable
                                                             onDragStart={(e) => e.dataTransfer.setData('text/plain', index.toString())}
                                                             onDragOver={(e) => e.preventDefault()}
@@ -671,7 +674,7 @@ export default function CarAdForm() {
                                                             </button>
                                                         </div>
                                                     ))}
-                                                    <label className="w-[11rem] h-[8.5rem] border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer">
+                                                    <label className="h-[150px] sm:h-[200px] border-2 border-dashed rounded-md flex items-center justify-center cursor-pointer">
                                                         <input
                                                             type="file"
                                                             accept="image/*"
@@ -768,9 +771,9 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Descriere scurta</FormLabel>
                                             <FormControl>
-                                                <Textarea
+                                                <InputCustom
                                                     placeholder="Scrie o descriere scurta pentru anunt..."
-                                                    className="mt-1 p-6 w-2/3"
+                                                    className="mt-1 p-4 sm:p-6 w-2/3"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -787,14 +790,14 @@ export default function CarAdForm() {
                                         <FormItem>
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Pret</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center w-2/3'>
-                                                    <div className='relative w-1/3'>
+                                                <div className='flex items-center w-full sm:w-2/3 pr-8'>
+                                                    <div className='relative w-full sm:w-1/3'>
                                                         <InputCustom
                                                             id="km"
                                                             type="number"
                                                             placeholder="0"
                                                             min={0}
-                                                            className="p-6 pr-12"
+                                                            className="p-4 sm:p-6 pr-12 w-full"
                                                             {...field}
                                                             value={field.value || ''}
                                                             onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value, 10) : undefined)}
@@ -810,15 +813,15 @@ export default function CarAdForm() {
                                 />
 
                                 {/* Location */}
-                                <div className='flex w-full gap-8'>
+                                <div className='flex flex-col sm:flex-row w-full gap-4 sm:gap-8'>
                                     <FormField
                                         control={form.control}
                                         name="location_city"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="w-full sm:w-1/2">
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Oras</FormLabel>
                                                 <FormControl>
-                                                    <div className='flex items-center min-w-[300px]'>
+                                                    <div className='flex items-center w-full'>
                                                         <DropdownSelectt
                                                             options={cities.map((city: { auto: string; nume: string }) => ({ value: city.auto, label: city.nume }))}
                                                             placeholder="Selecteaza un oras"
@@ -828,7 +831,7 @@ export default function CarAdForm() {
                                                                 const countiesData = await fetchCounties(value);
                                                                 setCounties(countiesData);
                                                             }}
-                                                            className="mt-1 p-6 w-full"
+                                                            className="mt-1 p-4 sm:p-6 w-full"
                                                         />
                                                         <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                     </div>
@@ -842,10 +845,10 @@ export default function CarAdForm() {
                                         control={form.control}
                                         name="location_county"
                                         render={({ field }) => (
-                                            <FormItem>
+                                            <FormItem className="w-full sm:w-1/2">
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Judet</FormLabel>
                                                 <FormControl>
-                                                    <div className='flex items-center min-w-[300px]'>
+                                                    <div className='flex items-center w-full'>
                                                         <DropdownSelectt
                                                             options={counties
                                                                 .filter((county: County) => county.nume !== undefined)
@@ -863,7 +866,7 @@ export default function CarAdForm() {
                                                             placeholder="Selecteaza un judet"
                                                             value={counties.find(county => county.nume === field.value)?.nume || field.value}
                                                             onChange={field.onChange}
-                                                            className="mt-1 p-6 w-full"
+                                                            className="mt-1 p-4 sm:p-6 w-full"
                                                             disabled={!form.watch('location_city')}
                                                         />
                                                         <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
@@ -877,9 +880,10 @@ export default function CarAdForm() {
 
 
                                 {/* Submit Button */}
-                                <div className='flex justify-end w-full'>
-                                    <Button type="submit" size="lg" className="mt-8 bg-blue-600">
-                                        Creeaza anuntul
+                                <div className='flex justify-center sm:justify-end w-full'>
+                                    <Button type="submit" size="lg" className="mt-8 bg-[#EB2126] hover:bg-[#EB2126]/90 hover:scale-105 transition-all duration-300 w-full sm:w-auto">
+                                        <CirclePlus className="mr-2 h-4 w-4" />
+                                        Creează anunțul
                                     </Button>
                                 </div>
                             </form>

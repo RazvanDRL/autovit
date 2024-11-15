@@ -67,7 +67,7 @@
     "express": "^4.21.1",
     "framer-motion": "^11.11.17",
     "input-otp": "^1.4.1",
-    "lucide-react": "^0.451.0",
+    "lucide-react": "^0.460.0",
     "next": "latest",
     "next-themes": "^0.3.0",
     "nuqs": "^2.2.0",

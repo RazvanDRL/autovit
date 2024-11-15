@@ -25,6 +25,7 @@ import Footer from "@/components/footer";
 import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/breadcrumb";
 import { Ad } from "@/types/schema";
+import { FAVORITES_UPDATED_EVENT } from "@/components/navbar";
 
 export default function Page() {
     const params = useParams<{ id: string }>();
@@ -36,6 +37,7 @@ export default function Page() {
     const [isFavourite, setIsFavourite] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [processingFavorite, setProcessingFavorite] = useState(false);
 
     const stats = [
         {
@@ -112,28 +114,73 @@ export default function Page() {
     };
 
     const handleFavorite = async () => {
-        setIsFavourite(!isFavourite);
-        if (ad) {
-            if (!isFavourite) {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .insert({
-                        favourite_ads: [ad.id]
-                    })
-                if (error) console.log('error', error)
-                if (data) {
-                    console.log('data', data)
-                }
-            } else {
-                const { data, error } = await supabase
-                    .from('profiles')
+        if (processingFavorite) {
+            return;
+        }
+
+        if (!user) {
+            toast.error("Trebuie să fii autentificat pentru a salva anunțuri!");
+            return;
+        }
+
+        try {
+            setProcessingFavorite(true);
+
+            const { data: existingFavorite } = await supabase
+                .from('favorites')
+                .select('*')
+                .eq('ad_id', params.id)
+                .eq('user_id', user.id)
+                .single();
+
+            if (existingFavorite) {
+                const { error } = await supabase
+                    .from('favorites')
                     .delete()
-                    .eq('favourite_ads', ad.id);
-                if (error) console.log('error', error)
-                if (data) {
-                    console.log('data', data)
-                }
+                    .eq('ad_id', params.id)
+                    .eq('user_id', user.id);
+
+                if (error) throw error;
+
+                setIsFavourite(false);
+                toast.success("Anunț eliminat de la favorite");
+
+                // Get updated count
+                const { count } = await supabase
+                    .from('favorites')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                // Dispatch event with total count
+                window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT, {
+                    detail: { count: count || 0 }
+                }));
+            } else {
+                const { error } = await supabase
+                    .from('favorites')
+                    .insert([{ ad_id: params.id, user_id: user.id }]);
+
+                if (error) throw error;
+
+                setIsFavourite(true);
+                toast.success("Anunț salvat la favorite");
+
+                // Get updated count
+                const { count } = await supabase
+                    .from('favorites')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                // Dispatch event with total count
+                window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT, {
+                    detail: { count: count || 0 }
+                }));
             }
+        } catch (error) {
+            toast.error("A apărut o eroare!");
+            console.error(error);
+        } finally {
+            setProcessingFavorite(false);
         }
     };
 
@@ -154,6 +201,25 @@ export default function Page() {
             thumbnailApi?.scrollTo(selectedIndex);
         });
     }, [api, thumbnailApi]);
+
+    useEffect(() => {
+        const checkFavorite = async () => {
+            if (!user) return;
+
+            const { data } = await supabase
+                .from('favorites')
+                .select('*')
+                .eq('ad_id', params.id)
+                .eq('user_id', user.id)
+                .single();
+
+            setIsFavourite(!!data);
+        };
+
+        if (user) {
+            checkFavorite();
+        }
+    }, [user, params.id]);
 
     if (!ad) {
         return <Loading />;

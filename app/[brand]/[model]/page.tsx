@@ -22,8 +22,18 @@ export default function Page() {
     const [bodyType, setBodyType] = useState(searchParams.get('body_type') || "");
     const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
     const router = useRouter();
-    // Get query parameters
-    const sortOrder = searchParams.get('sort') || 'created_at:desc';
+    const [sortOrder, setSortOrder] = useState(searchParams.get('sort') || 'created_at:desc');
+
+    const sortOptions = [
+        { value: 'created_at:desc', label: 'Cele mai noi' },
+        { value: 'created_at:asc', label: 'Cele mai vechi' },
+        { value: 'price:asc', label: 'Preț: Crescător' },
+        { value: 'price:desc', label: 'Preț: Descrescător' },
+        { value: 'km:asc', label: 'Kilometri: Crescător' },
+        { value: 'km:desc', label: 'Kilometri: Descrescător' },
+        { value: 'year:desc', label: 'An: Nou spre vechi' },
+        { value: 'year:asc', label: 'An: Vechi spre nou' },
+    ];
 
     const fetchAds = useCallback(async (filter: string) => {
         let query = supabase
@@ -34,11 +44,11 @@ export default function Page() {
             .limit(10);
 
         if (price) {
-            query = query.gte('price', price);
+            query = query.lte('price', price.replace(/[^0-9]/g, ''));
         }
 
         if (year) {
-            query = query.gte('year', year);
+            query = query.lte('year', year);
         }
 
         if (fuelType) {
@@ -56,29 +66,32 @@ export default function Page() {
         let { data: ads, error } = await query;
         if (error) console.log('error', error);
         setAds(ads || []);
-    }, [params.brand]);
+    }, [params.brand, params.model, price, year, fuelType, bodyType]);
 
     useEffect(() => {
         fetchAds(sortOrder);
-    }, [sortOrder, fetchAds]);
+    }, [sortOrder, fetchAds, params.brand, params.model, price, year, fuelType, bodyType]);
 
-    const handleSearch = (e: React.FormEvent) => {
-        e.preventDefault();
+    useEffect(() => {
+        // Don't update URL during initial render
+        if (!params.brand || !params.model) return;
 
-        // Create URLSearchParams object for query parameters
         const searchParams = new URLSearchParams();
-
-        // Add non-empty parameters
         if (price) searchParams.append('price', price);
         if (year) searchParams.append('year', year);
         if (fuelType) searchParams.append('fuel_type', fuelType);
         if (bodyType) searchParams.append('body_type', bodyType);
         if (sortOrder) searchParams.append('sort', sortOrder);
-        // Construct the URL with query parameters
+
         const queryString = searchParams.toString();
         const url = `/${brand}/${encodeURIComponent(model)}${queryString ? `?${queryString}` : ''}`;
 
-        router.push(url);
+        router.replace(url, { scroll: false });
+    }, [price, year, fuelType, bodyType, sortOrder, brand, model, router, params.brand, params.model]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        // The URL update is now handled by the useEffect above
     };
 
     // Fetch available models when brand changes
@@ -144,6 +157,19 @@ export default function Page() {
                         availableModels={availableModels}
                         onSubmit={handleSearch}
                     />
+                </div>
+                <div className="flex justify-end mb-4">
+                    <select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className="px-4 py-2 border rounded-md bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                        {sortOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </select>
                 </div>
                 <div className="grid grid-rows-3 gap-3">
                     {ads.map((ad) => (

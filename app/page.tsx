@@ -185,7 +185,7 @@ export default function Home() {
         const brandLabel = carBrands.find(b => b.label === brand)?.label || '';
         const modelLabel = availableModels.find(m => m.value === model)?.label || '';
 
-        const route = `/${brandLabel}/${modelLabel}`.replace(/\s+/g, '-');
+        const route = `/${brandLabel}/${encodeURIComponent(modelLabel)}`;
         router.push(route);
     };
 

@@ -108,12 +108,15 @@ export default function Home() {
         const fetchModels = async () => {
             if (!brand) {
                 setAvailableModels([]);
+                setModel("");
                 return;
             }
 
             try {
                 const selectedBrand = carBrands.find(b => b.label === brand);
                 if (!selectedBrand) return;
+
+                setModel("");
 
                 const { data: modelsData, error } = await supabase
                     .from('models')

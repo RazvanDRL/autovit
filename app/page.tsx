@@ -195,7 +195,6 @@ export default function Home() {
     const handleFavorite = async (e: React.MouseEvent, adId: string) => {
         e.preventDefault();
 
-        // If this ad is already being processed, ignore the click
         if (processingFavorites.has(adId)) {
             return;
         }
@@ -206,7 +205,6 @@ export default function Home() {
         }
 
         try {
-            // Add this ad to processing set
             setProcessingFavorites(prev => new Set(prev).add(adId));
 
             const { data: existingFavorite } = await supabase
@@ -222,34 +220,35 @@ export default function Home() {
                     .delete()
                     .eq('ad_id', adId)
                     .eq('user_id', user.id);
-                if (error) {
-                    console.error(error);
-                    toast.error("A apărut o eroare!");
-                    return;
-                }
+
+                if (error) throw error;
+
                 setFavorites(favorites.filter(id => id !== adId));
                 toast.success("Anunț eliminat de la favorite");
+
+                // Dispatch event with new count
+                window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT, {
+                    detail: { count: favorites.length - 1 }
+                }));
             } else {
                 const { error } = await supabase
                     .from('favorites')
-                    .insert([
-                        { ad_id: adId, user_id: user.id }
-                    ]);
-                if (error) {
-                    console.error(error);
-                    toast.error("A apărut o eroare!");
-                    return;
-                }
+                    .insert([{ ad_id: adId, user_id: user.id }]);
+
+                if (error) throw error;
+
                 setFavorites([...favorites, adId]);
                 toast.success("Anunț salvat la favorite");
-            }
 
-            window.dispatchEvent(new Event(FAVORITES_UPDATED_EVENT));
+                // Dispatch event with new count
+                window.dispatchEvent(new CustomEvent(FAVORITES_UPDATED_EVENT, {
+                    detail: { count: favorites.length + 1 }
+                }));
+            }
         } catch (error) {
             toast.error("A apărut o eroare!");
             console.error(error);
         } finally {
-            // Remove this ad from processing set
             setProcessingFavorites(prev => {
                 const next = new Set(prev);
                 next.delete(adId);

@@ -29,7 +29,13 @@ import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 import { User as UserType } from '@supabase/supabase-js';
 // Add this near the top of the file, outside the component
-export const FAVORITES_UPDATED_EVENT = 'favoritesUpdated';
+export const FAVORITES_UPDATED_EVENT = 'favoritesUpdated' as const;
+
+declare global {
+    interface WindowEventMap {
+        [FAVORITES_UPDATED_EVENT]: CustomEvent<{ count: number }>;
+    }
+}
 
 export default function Navbar() {
     const router = useRouter();
@@ -75,7 +81,10 @@ export default function Navbar() {
     }
 
     useEffect(() => {
-        async function getFavoritesCount() {
+        const initializeData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+
             if (user) {
                 const { count, error } = await supabase
                     .from('favorites')
@@ -89,26 +98,21 @@ export default function Navbar() {
 
                 setFavoritesCount(count || 0);
             }
-        }
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
+        };
 
-            // Only fetch favorites count if we have a user
-            if (user) {
-                getFavoritesCount();
-            }
-        }
-
-        getUser();
+        initializeData();
 
         // Listen for favorites updates
-        window.addEventListener(FAVORITES_UPDATED_EVENT, getFavoritesCount);
+        const handleFavoritesUpdate = (e: CustomEvent) => {
+            setFavoritesCount(e.detail.count);
+        };
+
+        window.addEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate as EventListener);
 
         return () => {
-            window.removeEventListener(FAVORITES_UPDATED_EVENT, getFavoritesCount);
+            window.removeEventListener(FAVORITES_UPDATED_EVENT, handleFavoritesUpdate as EventListener);
         };
-    }, [user]);
+    }, []);
 
     const handleAccountClick = () => {
         if (!user) {

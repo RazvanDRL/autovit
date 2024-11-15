@@ -7,17 +7,19 @@ import Navbar from "@/components/navbar";
 import Breadcrumb from "@/components/breadcrumb";
 import { useQueryState } from "nuqs";
 import { Ad } from "@/types/schema";
-import DropdownSelect from "@/components/dropdownSelect";
-import { carBrands } from "@/lib/carBrands";
-import { carModels } from "@/lib/carModels";
+import CarSearch from "@/components/CarSearch";
 import Footer from "@/components/footer";
-
+import { carBrands } from "@/lib/carBrands";
 
 export default function Page() {
     const params = useParams<{ brand: string, model: string }>();
     const [ads, setAds] = useState<Array<Ad>>([]);
     const [brand, setBrand] = useState(params.brand);
-    const [model, setModel] = useState(params.model);
+    const [model, setModel] = useState(decodeURIComponent(params.model));
+    const [year, setYear] = useState("");
+    const [color, setColor] = useState("");
+    const [transmission, setTransmission] = useState("");
+    const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
     const router = useRouter();
 
     // Replace searchParams with nuqs query states
@@ -27,15 +29,14 @@ export default function Page() {
     const [yearMax] = useQueryState('year_max', { parse: (v) => Number(v) });
     const [kmMin] = useQueryState('km_min', { parse: (v) => Number(v) });
     const [kmMax] = useQueryState('km_max', { parse: (v) => Number(v) });
-    const [fuelType] = useQueryState('fuel_type');
-    const [sortOrder] = useQueryState('sort', { defaultValue: 'created_at:desc' })
-
+    const [fuelType, setFuelType] = useQueryState('fuel_type');
+    const [sortOrder] = useQueryState('sort', { defaultValue: 'created_at:desc' });
     const fetchAds = useCallback(async (filter: string) => {
         let query = supabase
             .from('listings')
             .select('*')
             .ilike('brand', params.brand)
-            .ilike('model', params.model)
+            .ilike('model', decodeURIComponent(params.model))
             .limit(10);
 
         const [column, order] = filter.split(':');
@@ -44,38 +45,80 @@ export default function Page() {
         let { data: ads, error } = await query;
         if (error) console.log('error', error);
         setAds(ads || []);
-    }, [params.brand, params.model]);
-
+    }, [params.brand, decodeURIComponent(params.model)]);
 
     useEffect(() => {
         fetchAds(sortOrder);
     }, [sortOrder, fetchAds]);
 
+    // Fetch available models when brand changes
+    useEffect(() => {
+        const fetchModels = async () => {
+            if (!brand) {
+                setAvailableModels([]);
+                return;
+            }
+            // @dev use brand id here
+            try {
+                const { data: modelsData, error } = await supabase
+                    .from('models')
+                    .select('data')
+                    .eq('value', carBrands.find(b => b.label === brand)?.value)
+                    .single();
+
+                if (error) {
+                    console.error('Error fetching models:', error);
+                    return;
+                }
+
+                if (modelsData?.data) {
+                    const uniqueModels = new Map();
+                    modelsData.data.forEach((model: any) => {
+                        const key = `${model.displayName}_${model.id}`;
+                        uniqueModels.set(key, {
+                            value: model.displayName,
+                            label: model.displayName,
+                            id: model.id,
+                            group: model.group || false
+                        });
+                    });
+                    setAvailableModels(Array.from(uniqueModels.values()));
+                }
+            } catch (error) {
+                console.error('Error in fetchModels:', error);
+            }
+        };
+
+        fetchModels();
+    }, [brand]);
+
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.push(`/${brand}/${encodeURIComponent(model)}`);
+    };
+
     return (
         <div>
             <Navbar />
             <div className="mt-[4rem] container mx-auto max-w-6xl px-4 sm:px-6">
-                <Breadcrumb brand={params.brand.toUpperCase()} model={params.model.toUpperCase()} />
-                {/* Filters */}
-                <div className="w-full my-8 sm:my-16">
-                    <div className="w-full sm:w-1/2 flex flex-col sm:flex-row gap-2">
-                        <DropdownSelect
-                            label="Marca"
-                            options={carBrands}
-                            placeholder="Selecteaza marca..."
-                            value={brand}
-                            onChange={(value) => router.push(`/${value.toLowerCase()}/${model}`)}
-                            className="w-full"
-                        />
-                        <DropdownSelect
-                            label="Model"
-                            options={carModels[brand as keyof typeof carModels].map((model) => ({ value: model, label: model }))}
-                            placeholder="Selecteaza model..."
-                            value={model}
-                            onChange={(value) => router.push(`/${brand}/${value}`)}
-                            className="w-full"
-                        />
-                    </div>
+                <Breadcrumb brand={params.brand} model={decodeURIComponent(params.model)} />
+                <div className="w-full my-8">
+                    <CarSearch
+                        brand={brand}
+                        setBrand={setBrand}
+                        model={model}
+                        setModel={setModel}
+                        year={year}
+                        setYear={setYear}
+                        color={color}
+                        setColor={setColor}
+                        fuelType={fuelType || ""}
+                        setFuelType={setFuelType}
+                        transmission={transmission}
+                        setTransmission={setTransmission}
+                        availableModels={availableModels}
+                        onSubmit={handleSearch}
+                    />
                 </div>
                 <div className="grid grid-rows-3 gap-3">
                     {ads.map((ad) => (
@@ -100,6 +143,6 @@ export default function Page() {
                 </div>
             </div>
             <Footer />
-        </div >
+        </div>
     );
 }

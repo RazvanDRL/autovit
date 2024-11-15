@@ -176,7 +176,7 @@ export default function MessagesPage() {
                                     </Avatar>
                                     <div>
                                         <p className="text-sm font-medium">{conversation.other_user.name}</p>
-                                        <p className="text-sm text-gray-500">{conversation.last_message.content}</p>
+                                        <p className="text-sm text-gray-500 max-w-[200px] truncate">{conversation.last_message.content}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space -x-2">

@@ -391,13 +391,17 @@ export default function ChatPage() {
                 </div>
                 <div className="flex flex-col h-[calc(100vh-16rem)] sm:h-[700px] w-full max-w-[600px] border-2 border-input rounded-lg">
                     <div className="border-b border-input p-4 flex items-center bg-background">
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={otherUser?.avatar || ''} alt={otherUser?.name || ''} />
-                            <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
-                        </Avatar>
-                        <div className="ml-4">
-                            <h2 className="font-semibold">{otherUser?.name || 'Utilizator'}</h2>
-                        </div>
+                        {otherUser && (
+                            <Link href={`/profile/${otherUser.id}`} className="flex items-center">
+                                <Avatar className="h-10 w-10">
+                                    <AvatarImage src={otherUser?.avatar || ''} alt={otherUser?.name || ''} />
+                                    <AvatarFallback>{otherUser?.name?.[0] || 'U'}</AvatarFallback>
+                                </Avatar>
+                                <div className="ml-4">
+                                    <h2 className="font-semibold">{otherUser?.name || 'Utilizator'}</h2>
+                                </div>
+                            </Link>
+                        )}
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-4 bg-background">

@@ -44,18 +44,10 @@ import Navbar from '@/components/navbar';
 import Tiptap from '@/components/tiptap';
 import Image from 'next/image';
 import Loading from '@/components/loading';
-// import { useQueryState } from 'nuqs';
 import cities from '@/lib/cities.json';
 import { County, fetchCounties } from '@/lib/index';
-
-const brands = ['BMW', 'Mercedes', 'Audi', 'Toyota', 'Ford'];
-const models: { [key: string]: string[] } = {
-    BMW: ['3 Series', '5 Series', 'X5', 'i8'],
-    Mercedes: ['C-Class', 'E-Class', 'S-Class', 'GLE'],
-    Audi: ['A4', 'A6', 'Q5', 'e-tron'],
-    Toyota: ['Corolla', 'Camry', 'RAV4', 'Prius'],
-    Ford: ['Focus', 'Mustang', 'Explorer', 'F-150']
-};
+import { carBrands } from '@/lib/carBrands';
+import DropdownSelect from '@/components/dropdownSelect';
 
 const years = Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i);
 
@@ -95,6 +87,8 @@ const formSchema = z.object({
     short_description: z.string().min(3).max(MAX_LENGTH),
     photos: z.array(z.string()).min(1).max(MAX_FILES),
     doors: z.string().min(3).max(3),
+    brand_id: z.number().int().min(1),
+    model_id: z.number().int().min(1),
 }).refine(data => {
     if (data.year === new Date().getFullYear() && data.km > 10000) {
         return false;
@@ -105,7 +99,8 @@ const formSchema = z.object({
     path: ["km"]
 });
 
-const DropdownSelect = ({ options, placeholder, value, onChange, className, disabled }: {
+
+const DropdownSelectt = ({ options, placeholder, value, onChange, className, disabled }: {
     options: { value: string; label: string; ads?: number }[];
     placeholder: string;
     value: string | number;
@@ -170,6 +165,7 @@ const DropdownSelect = ({ options, placeholder, value, onChange, className, disa
     );
 };
 
+
 export default function CarAdForm() {
     const router = useRouter();
     const [isUploading, setIsUploading] = useState(false);
@@ -178,19 +174,7 @@ export default function CarAdForm() {
     const [listingId, setListingId] = useState("");
     const [loading, setLoading] = useState(true);
     const [counties, setCounties] = useState<County[]>([]);
-
-    useEffect(() => {
-        async function fetchUserData() {
-            const { data: { user } } = await supabase.auth.getUser();
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(user);
-            setAccessToken(session?.access_token || null);
-            setLoading(false);
-        }
-
-        fetchUserData();
-    }, []);
-
+    const [availableModels, setAvailableModels] = useState<{ value: string; label: string; id?: number; group?: boolean; }[]>([]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -216,8 +200,22 @@ export default function CarAdForm() {
             engine_size: undefined,
             power: undefined,
             km: undefined,
+            brand_id: 0,
+            model_id: 0,
         },
     });
+
+    useEffect(() => {
+        async function fetchUserData() {
+            const { data: { user } } = await supabase.auth.getUser();
+            const { data: { session } } = await supabase.auth.getSession();
+            setUser(user);
+            setAccessToken(session?.access_token || null);
+            setLoading(false);
+        }
+
+        fetchUserData();
+    }, []);
 
     useEffect(() => {
         if (user?.id) {
@@ -323,10 +321,37 @@ export default function CarAdForm() {
                                             <FormControl>
                                                 <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
-                                                        options={brands.map((brand) => ({ value: brand, label: brand }))}
+                                                        options={carBrands}
                                                         placeholder="Selecteaza o marca"
                                                         value={field.value}
-                                                        onChange={field.onChange}
+                                                        onChange={async (value) => {
+                                                            field.onChange(value);
+                                                            form.setValue('model', '');
+
+                                                            // Set brand_id
+                                                            const selectedBrand = carBrands.find(b => b.label === value);
+                                                            if (selectedBrand?.value) {
+                                                                form.setValue('brand_id', parseInt(selectedBrand.value, 10));
+                                                            }
+
+                                                            // Fetch models for selected brand
+                                                            if (selectedBrand) {
+                                                                const { data: modelsData } = await supabase
+                                                                    .from('models')
+                                                                    .select('data')
+                                                                    .eq('value', selectedBrand.value)
+                                                                    .single();
+
+                                                                if (modelsData?.data) {
+                                                                    setAvailableModels(modelsData.data.map((model: any) => ({
+                                                                        value: model.displayName,
+                                                                        label: model.displayName,
+                                                                        id: model.id,
+                                                                        group: model.group || false
+                                                                    })));
+                                                                }
+                                                            }
+                                                        }}
                                                         className="mt-1 p-6 w-full"
                                                     />
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
@@ -347,10 +372,17 @@ export default function CarAdForm() {
                                             <FormControl>
                                                 <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
-                                                        options={form.watch("brand") ? models[form.watch("brand")].map((model) => ({ value: model, label: model })) : []}
-                                                        placeholder="Selecteaza un model..."
+                                                        options={availableModels}
+                                                        placeholder="Selecteaza un model"
                                                         value={field.value}
-                                                        onChange={field.onChange}
+                                                        onChange={(value) => {
+                                                            field.onChange(value);
+                                                            // Set model_id
+                                                            const selectedModel = availableModels.find(m => m.label === value);
+                                                            if (selectedModel?.id) {
+                                                                form.setValue('model_id', selectedModel.id);
+                                                            }
+                                                        }}
                                                         className="mt-1 p-6 w-full"
                                                         disabled={!form.watch("brand")}
                                                     />
@@ -787,7 +819,7 @@ export default function CarAdForm() {
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Oras</FormLabel>
                                                 <FormControl>
                                                     <div className='flex items-center min-w-[300px]'>
-                                                        <DropdownSelect
+                                                        <DropdownSelectt
                                                             options={cities.map((city: { auto: string; nume: string }) => ({ value: city.auto, label: city.nume }))}
                                                             placeholder="Selecteaza un oras"
                                                             value={cities.find(city => city.auto === field.value)?.nume || field.value}
@@ -814,7 +846,7 @@ export default function CarAdForm() {
                                                 <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Judet</FormLabel>
                                                 <FormControl>
                                                     <div className='flex items-center min-w-[300px]'>
-                                                        <DropdownSelect
+                                                        <DropdownSelectt
                                                             options={counties
                                                                 .filter((county: County) => county.nume !== undefined)
                                                                 .reduce((unique: County[], current: County) => {

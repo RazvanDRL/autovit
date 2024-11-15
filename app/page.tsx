@@ -14,6 +14,7 @@ import { toast, Toaster } from 'sonner';
 import { User as UserType } from '@supabase/supabase-js';
 import { FAVORITES_UPDATED_EVENT } from '@/components/navbar';
 import Footer from '@/components/footer';
+import CarSearch from '@/components/CarSearch';
 
 const fuelTypes = [
     { value: "Petrol", label: "Petrol" },
@@ -110,30 +111,41 @@ export default function Home() {
                 return;
             }
 
-            // Find the label from carBrands
-            const selectedBrand = carBrands.find(b => b.value === brand);
-            if (!selectedBrand) return;
-
             try {
-                const { data, error } = await supabase
+                const selectedBrand = carBrands.find(b => b.label === brand);
+                if (!selectedBrand) return;
+
+                const { data: modelsData, error } = await supabase
                     .from('models')
                     .select('data')
-                    .eq('value', selectedBrand.label)
+                    .eq('value', selectedBrand.value)
                     .single();
 
-                if (error) throw error;
+                if (error) {
+                    console.error('Error fetching models:', error);
+                    return;
+                }
 
-                if (data && data.data) {
-                    const modelOptions = data.data.map((model: string) => ({
-                        value: model,
-                        label: model
-                    }));
+                if (modelsData?.data) {
+                    // Create a Map to handle duplicates
+                    const uniqueModels = new Map();
+
+                    modelsData.data.forEach((model: any) => {
+                        const key = `${model.displayName}_${model.id}`; // Combine name and ID for uniqueness
+                        uniqueModels.set(key, {
+                            value: model.displayName,
+                            label: model.displayName,
+                            id: model.id, // Keep the ID for reference
+                            group: model.group || false
+                        });
+                    });
+
+                    // Convert Map back to array
+                    const modelOptions = Array.from(uniqueModels.values());
                     setAvailableModels(modelOptions);
                 }
             } catch (error) {
-                console.error('Error fetching models:', error);
-                toast.error("Couldn't load models");
-                setAvailableModels([]);
+                console.error('Error in fetchModels:', error);
             }
         };
 
@@ -166,15 +178,14 @@ export default function Home() {
         }
     };
 
-    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Get the labels instead of values
-        const brandLabel = carBrands.find(b => b.value === brand)?.label || '';
+        // Get the labels for the URL
+        const brandLabel = carBrands.find(b => b.label === brand)?.label || '';
         const modelLabel = availableModels.find(m => m.value === model)?.label || '';
 
-        // Use the labels in the route
-        const route = `/${brandLabel}/${modelLabel}`;
+        const route = `/${brandLabel}/${modelLabel}`.replace(/\s+/g, '-');
         router.push(route);
     };
 
@@ -253,73 +264,22 @@ export default function Home() {
             <Navbar />
             <Toaster />
             <main className="mt-16 lg:max-w-6xl mx-auto">
-                <form onSubmit={handleSearch} className="w-full p-8 drop-shadow-xl bg-white rounded-sm border border-gray-100">
-                    <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                        <div className="col-span-2">
-                            <DropdownSelect
-                                options={carBrands}
-                                placeholder="Marca"
-                                value={brand}
-                                onChange={setBrand}
-                                className="p-6"
-                            />
-                        </div>
-                        <div className="col-span-2">
-                            <DropdownSelect
-                                options={availableModels}
-                                placeholder="Model"
-                                value={model}
-                                onChange={setModel}
-                                disabled={!brand}
-                                className="p-6"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <DropdownSelect
-                                options={years}
-                                placeholder="Pret pana la"
-                                value={year}
-                                onChange={setYear}
-                                className="p-6"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <DropdownSelect
-                                options={colors}
-                                placeholder="Anul de la"
-                                value={color}
-                                onChange={setColor}
-                                className="p-6"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <DropdownSelect
-                                options={fuelTypes}
-                                placeholder="Tip caroserie"
-                                value={fuelType}
-                                onChange={setFuelType}
-                                className="p-6"
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <DropdownSelect
-                                options={transmissions}
-                                placeholder="Combustibil"
-                                value={transmission}
-                                onChange={setTransmission}
-                                className="p-6"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end mt-8 w-full">
-                        <Button
-                            type="submit"
-                            className="w-1/2 bg-[#C82814] font-semibold py-6 text-base"
-                        >
-                            Caută anunțuri
-                        </Button>
-                    </div>
-                </form>
+                <CarSearch
+                    brand={brand}
+                    setBrand={setBrand}
+                    model={model}
+                    setModel={setModel}
+                    year={year}
+                    setYear={setYear}
+                    color={color}
+                    setColor={setColor}
+                    fuelType={fuelType}
+                    setFuelType={setFuelType}
+                    transmission={transmission}
+                    setTransmission={setTransmission}
+                    availableModels={availableModels}
+                    onSubmit={handleSearch}
+                />
                 <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {cards.map((card) => (
                         <Card

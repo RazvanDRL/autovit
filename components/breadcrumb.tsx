@@ -19,7 +19,7 @@ export default function Breadcrumb({ brand, model }: BreadcrumbProps) {
                 <li>
                     <div className="flex items-center">
                         <ChevronRight className="w-4 h-4 text-gray-400" />
-                        <Link href={`/${brand.toLowerCase()}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
+                        <Link href={`/${brand}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
                             {brand}
                         </Link>
                     </div>
@@ -28,7 +28,7 @@ export default function Breadcrumb({ brand, model }: BreadcrumbProps) {
                     <li aria-current="page">
                         <div className="flex items-center">
                             <ChevronRight className="w-4 h-4 text-gray-400" />
-                            <Link href={`/${brand.toLowerCase()}/${model.toLowerCase()}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
+                            <Link href={`/${brand}/${encodeURIComponent(model)}`} className="ml-1 text-sm hover:font-bold text-black/50 hover:text-black/90 md:ml-2">
                                 {model}
                             </Link>
                         </div>

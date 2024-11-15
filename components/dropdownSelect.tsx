@@ -8,6 +8,8 @@ import { ButtonDropdown } from '@/components/ui/buttonDropdown';
 type Option = {
     value: string;
     label: string;
+    id?: number;
+    group?: boolean;
 }
 
 interface DropdownSelectProps {
@@ -59,22 +61,31 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
                         <CommandEmpty>No {placeholder.toLowerCase()} found.</CommandEmpty>
                         <CommandGroup>
                             {options.map((option) => (
-                                <CommandItem
-                                    key={option.value}
-                                    value={option.label}
-                                    onSelect={(currentValue) => {
-                                        onChange(currentValue === value ? "" : currentValue);
-                                        setOpen(false);
-                                    }}
-                                >
-                                    <Check
-                                        className={cn(
-                                            "mr-2 h-4 w-4",
-                                            value === option.label ? "opacity-100" : "opacity-0"
-                                        )}
-                                    />
-                                    {option.label}
-                                </CommandItem>
+                                option.group ? (
+                                    <div
+                                        key={`group-${option.value}`}
+                                        className="px-2 py-1.5 text-sm font-semibold text-muted-foreground"
+                                    >
+                                        {option.label}
+                                    </div>
+                                ) : (
+                                    <CommandItem
+                                        key={`${option.value}_${option.id}`}
+                                        value={option.label}
+                                        onSelect={(currentValue) => {
+                                            onChange(currentValue === value ? "" : currentValue);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <Check
+                                            className={cn(
+                                                "mr-2 h-4 w-4",
+                                                value === option.label ? "opacity-100" : "opacity-0"
+                                            )}
+                                        />
+                                        {option.label}
+                                    </CommandItem>
+                                )
                             ))}
                         </CommandGroup>
                     </CommandList>

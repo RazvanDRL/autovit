@@ -26,4 +26,6 @@ export type Ad = {
     user_full_name: string,
     user_phone: string,
     is_company: boolean,
+    brand_id: number,
+    model_id: number,
 }

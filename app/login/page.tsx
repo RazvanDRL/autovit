@@ -14,10 +14,6 @@ import GmailLogo from '@/public/logos/gmail.svg';
 import Loading from '@/components/loading';
 import Logo from '@/public/logo.svg';
 
-const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'https://autovit.vercel.app'
-  : 'http://localhost:3000';
-
 export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState<string>("");
@@ -42,7 +38,7 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${BASE_URL}/complete-profile`,
+        emailRedirectTo: `${window.location.origin}/complete-profile`,
       },
     });
     if (error) {
@@ -55,17 +51,28 @@ export default function Login() {
   };
 
   const handleOAuthLogin = async (provider: "google" | "twitter") => {
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${BASE_URL}/complete-profile`,
-      },
-    });
-    if (error) {
-      toast.error(error.message);
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/complete-profile`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      console.error('OAuth error:', error);
+      toast.error('An error occurred during login');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const openGmail = () => {

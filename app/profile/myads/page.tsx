@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { User } from '@supabase/supabase-js';
 import Navbar from '@/components/navbar';
@@ -15,7 +15,7 @@ import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function MyAdsPage() {
+function MyAdsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [user, setUser] = useState<User | null>(null);
@@ -193,5 +193,35 @@ export default function MyAdsPage() {
             </div>
             <Footer />
         </>
+    );
+}
+
+export default function MyAdsPage() {
+    return (
+        <Suspense fallback={
+            <>
+                <Navbar />
+                <div className="container mx-auto max-w-5xl p-4 mt-8">
+                    <h1 className="text-2xl font-bold mb-6">Anunțurile mele</h1>
+                    <div className="space-y-4">
+                        {[...Array(3)].map((_, i) => (
+                            <div key={i} className="border rounded-lg p-4">
+                                <div className="flex space-x-4">
+                                    <div className="w-48 h-32 bg-gray-200 rounded animate-pulse" />
+                                    <div className="flex-1 space-y-2">
+                                        <div className="h-4 bg-gray-200 rounded w-3/4 animate-pulse" />
+                                        <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse" />
+                                        <div className="h-4 bg-gray-200 rounded w-1/4 animate-pulse" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <Footer />
+            </>
+        }>
+            <MyAdsContent />
+        </Suspense>
     );
 }

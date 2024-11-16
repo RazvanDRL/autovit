@@ -10,6 +10,7 @@ import Navbar from '@/components/navbar';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/footer';
+import { MessageSquare } from 'lucide-react';
 
 interface Conversation {
     id: string;
@@ -145,7 +146,29 @@ export default function MessagesPage() {
         };
     }, [currentUser]);
 
-    if (loading) return <Loading />;
+    if (loading) return (
+        <>
+            <Navbar />
+            <div className="container min-h-[65vh] mx-auto p-4 max-w-2xl mt-8">
+                <h1 className="text-2xl font-bold mb-6">Mesaje</h1>
+                <div className="space-y-2">
+                    {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg">
+                            <div className="flex items-center space-x-4">
+                                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
+                                <div>
+                                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-2" />
+                                    <div className="h-3 w-32 bg-gray-200 rounded animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="h-3 w-16 bg-gray-200 rounded animate-pulse" />
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <Footer />
+        </>
+    );
 
     return (
         <>
@@ -153,43 +176,51 @@ export default function MessagesPage() {
             <div className="container min-h-[65vh] mx-auto p-4 max-w-2xl mt-8">
                 <h1 className="text-2xl font-bold mb-6">Mesaje</h1>
                 <div className="space-y-2">
-                    {conversations.map((conversation) => (
-                        <Link
-                            key={conversation.id}
-                            href={`/profile/messages/${conversation.other_user.id}`}
-                            className="block"
-                        >
-                            <div className="flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
-                                <div className="flex items-center space-x-4">
-                                    <Avatar>
-                                        <Image
-                                            src={conversation.other_user.avatar}
-                                            alt={conversation.other_user.name}
-                                            width={40}
-                                            height={40}
-                                            className="rounded-full blur-sm transition-all duration-300"
-                                            onLoadingComplete={
-                                                (image) => image.classList.remove('blur-sm')
-                                            }
-                                        />
-                                        <AvatarFallback>{conversation.other_user.name?.[0] || 'U'}</AvatarFallback>
-                                    </Avatar>
-                                    <div>
-                                        <p className="text-sm font-medium">{conversation.other_user.name}</p>
-                                        <p className="text-sm text-gray-500 max-w-[200px] truncate">{conversation.last_message.content}</p>
+                    {conversations.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                            <MessageSquare className="w-12 h-12 mb-4" />
+                            <p className="text-lg font-medium">Nu ai niciun mesaj încă</p>
+                            <p className="text-sm">Mesajele tale vor apărea aici</p>
+                        </div>
+                    ) : (
+                        conversations.map((conversation) => (
+                            <Link
+                                key={conversation.id}
+                                href={`/profile/messages/${conversation.other_user.id}`}
+                                className="block"
+                            >
+                                <div className="flex items-center justify-between p-4 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div className="flex items-center space-x-4">
+                                        <Avatar>
+                                            <Image
+                                                src={conversation.other_user.avatar}
+                                                alt={conversation.other_user.name}
+                                                width={40}
+                                                height={40}
+                                                className="rounded-full blur-sm transition-all duration-300"
+                                                onLoadingComplete={
+                                                    (image) => image.classList.remove('blur-sm')
+                                                }
+                                            />
+                                            <AvatarFallback>{conversation.other_user.name?.[0] || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <p className="text-sm font-medium">{conversation.other_user.name}</p>
+                                            <p className="text-sm text-gray-500 max-w-[200px] truncate">{conversation.last_message.content}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center space -x-2">
+                                        <p className="text-sm text-gray-500">{formatTimeAgo(conversation.last_message.created_at)}</p>
+                                        {conversation.unread_count > 0 && (
+                                            <div className="w-8 h-8 ml-2 bg-red-500 text-white text-xs font-bold rounded-lg flex items-center justify-center">
+                                                {conversation.unread_count}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                                <div className="flex items-center space -x-2">
-                                    <p className="text-sm text-gray-500">{formatTimeAgo(conversation.last_message.created_at)}</p>
-                                    {conversation.unread_count > 0 && (
-                                        <div className="w-8 h-8 ml-2 bg-red-500 text-white text-xs font-bold rounded-lg flex items-center justify-center">
-                                            {conversation.unread_count}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </Link>
-                    ))}
+                            </Link>
+                        ))
+                    )}
                 </div>
             </div>
             <Footer />

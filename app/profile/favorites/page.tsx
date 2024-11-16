@@ -10,6 +10,7 @@ import Loading from '@/components/loading';
 import { useRouter } from 'next/navigation';
 import { FAVORITES_UPDATED_EVENT } from '@/components/navbar';
 import CardHorizontal from '@/components/cardHorizontal';
+import { Heart } from 'lucide-react';
 
 export default function FavoritesPage() {
     const router = useRouter();
@@ -115,7 +116,30 @@ export default function FavoritesPage() {
         }
     };
 
-    if (loading) return <Loading />;
+    if (loading) return (
+        <>
+            <Navbar />
+            <div className="container mx-auto max-w-5xl p-4 mt-8">
+                <h1 className="text-2xl font-bold mb-6">Anunțurile mele favorite</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="border rounded-lg overflow-hidden">
+                            <div className="w-full h-48 bg-gray-200 animate-pulse" />
+                            <div className="p-4 space-y-3">
+                                <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                                <div className="h-4 w-1/2 bg-gray-200 rounded animate-pulse" />
+                                <div className="h-4 w-2/3 bg-gray-200 rounded animate-pulse" />
+                                <div className="flex justify-between items-center mt-4">
+                                    <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
+                                    <div className="h-6 w-6 bg-gray-200 rounded-full animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
 
     return (
         <>
@@ -124,11 +148,13 @@ export default function FavoritesPage() {
                 <Toaster />
                 <h1 className="text-2xl font-bold mb-6">Anunțurile mele favorite</h1>
                 {favorites.length === 0 ? (
-                    <div className="text-center text-gray-500 mt-8">
-                        <p>Nu ai niciun anunț favorit momentan.</p>
+                    <div className="flex flex-col items-center justify-center py-16 text-gray-500">
+                        <Heart className="w-16 h-16 mb-4" />
+                        <p className="text-lg font-medium">Nu ai niciun anunț favorit momentan</p>
+                        <p className="text-sm mt-2">Adaugă anunțuri la favorite pentru a le găsi mai ușor</p>
                     </div>
                 ) : (
-                    <div className="flex flex-row gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {favorites.map((ad) => (
                             <Card
                                 key={ad.id}

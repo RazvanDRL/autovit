@@ -2,6 +2,7 @@ import { formatNumberWithSpace } from "@/lib/numberFormat"
 import { Heart, Calendar, MapPin, Fuel, Gauge } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 interface CardProps {
     id: string
@@ -17,6 +18,7 @@ interface CardProps {
     isFavorite?: boolean
     onFavoriteClick?: (e: React.MouseEvent, id: string) => void
     isProcessing?: boolean
+    isLoading?: boolean
 }
 
 export default function Card({
@@ -33,6 +35,7 @@ export default function Card({
     isFavorite = false,
     onFavoriteClick,
     isProcessing = false,
+    isLoading = false,
 }: CardProps) {
     const sizeConfig = {
         small: {
@@ -63,10 +66,31 @@ export default function Card({
 
     const config = sizeConfig[size]
 
+    if (isLoading) {
+        return (
+            <div
+                className="bg-white shadow-md border border-gray-100 rounded-lg overflow-hidden flex flex-col animate-pulse"
+                style={{ width: config.width }}
+            >
+                <div className="relative bg-gray-200" style={{ height: config.imageHeight }} />
+                <div className="p-3 flex-grow">
+                    <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                    <div className="h-4 bg-gray-100 rounded w-1/2 mb-3" />
+                    <div className="space-y-2">
+                        <div className="h-3 bg-gray-100 rounded w-1/3" />
+                        <div className="h-3 bg-gray-100 rounded w-2/5" />
+                        <div className="h-3 bg-gray-100 rounded w-1/4" />
+                    </div>
+                    <div className="h-3 bg-gray-100 rounded w-2/3 mt-3" />
+                </div>
+            </div>
+        )
+    }
+
     return (
         <Link
             href={`/a/${id}`}
-            className="bg-white shadow-lg border border-gray-200 transition-all duration-300 rounded-lg overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 hover:scale-[1.02]"
+            className="bg-white shadow-md transition-all duration-300 rounded-lg overflow-hidden flex flex-col hover:shadow-md hover:-translate-y-1 hover:scale-[1.02]"
             style={{ width: config.width }}
         >
             <div className="relative" style={{ height: config.imageHeight }}>

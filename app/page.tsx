@@ -230,7 +230,48 @@ export default function Home() {
     };
 
     if (loading) {
-        return <Loading />;
+        return (
+            <div>
+                <Navbar />
+                <Toaster />
+                <main className="mt-16 lg:max-w-6xl mx-auto">
+                    <CarSearch
+                        brand={brand}
+                        setBrand={setBrand}
+                        model={model}
+                        setModel={setModel}
+                        price={price}
+                        setPrice={setPrice}
+                        year={year}
+                        setYear={setYear}
+                        fuelType={fuelType as FuelType}
+                        setFuelType={setFuelType}
+                        bodyType={bodyType as BodyType}
+                        setBodyType={setBodyType}
+                        availableModels={availableModels}
+                        onSubmit={handleSearch}
+                    />
+                    <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        {Array(ITEMS_PER_PAGE).fill(0).map((_, index) => (
+                            <Card
+                                key={index}
+                                id=""
+                                photo=""
+                                brand=""
+                                model=""
+                                price={0}
+                                location=""
+                                year={0}
+                                km={0}
+                                fuel_type=""
+                                isLoading={true}
+                            />
+                        ))}
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
     }
 
     return (

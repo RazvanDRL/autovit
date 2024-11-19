@@ -4,6 +4,7 @@ import DropdownSelect from '@/components/dropdownSelect';
 import { carBrands } from '@/lib/carBrands';
 import { years } from '@/lib/years';
 import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
+import { ChevronDown } from 'lucide-react';
 
 const prices = [
     { value: "1000", label: "1000 EUR" },
@@ -45,7 +46,7 @@ interface CarSearchProps {
     setFuelType: (value: FuelType) => void;
     bodyType: BodyType;
     setBodyType: (value: BodyType) => void;
-    availableModels: { value: string, label: string }[];
+    availableModels: { value: string, label: string, id: number, group?: boolean }[];
     onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -77,15 +78,32 @@ export default function CarSearch({
                         className="p-6"
                     />
                 </div>
-                <div className="col-span-2">
-                    <DropdownSelect
-                        options={availableModels}
-                        placeholder="Model"
-                        value={model}
-                        onChange={setModel}
-                        disabled={!brand}
-                        className="p-6"
-                    />
+                <div className="col-span-2 mt-2">
+                    <div className="flex flex-col w-full">
+                        <div className="relative">
+                            <select
+                                id="model-select"
+                                value={model}
+                                onChange={(e) => setModel(e.target.value)}
+                                disabled={!brand || brand === "" || availableModels.length === 0}
+                                className={`w-full appearance-none text-md justify-between rounded-sm font-[400] p-3 pr-12 ${!brand || brand === "" || availableModels.length === 0
+                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                        : "bg-[#EBECEF] border-[#EBECEF]"
+                                    }`}
+                            >
+                                <option value="">Selectează modelul</option>
+                                {availableModels.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.group ? option.label : `\u00A0\u00A0\u00A0\u00A0${option.label}`}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 pointer-events-none ${!brand || brand === "" || availableModels.length === 0
+                                    ? "text-gray-400"
+                                    : ""
+                                }`} />
+                        </div>
+                    </div>
                 </div>
                 <div className="col-span-1">
                     <DropdownSelect

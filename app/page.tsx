@@ -1,15 +1,10 @@
 "use client";
 import Navbar from '@/components/navbar';
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import DropdownSelect from '@/components/dropdownSelect';
 import Card from '@/components/card';
 import { supabase } from '@/lib/supabaseClient';
 import { carBrands } from '@/lib/carBrands';
-import { years } from '@/lib/years';
-import { colors } from '@/lib/colors';
 import { useRouter } from 'next/navigation';
-import Loading from '@/components/loading';
 import { toast, Toaster } from 'sonner';
 import { User as UserType } from '@supabase/supabase-js';
 import { FAVORITES_UPDATED_EVENT } from '@/components/navbar';
@@ -34,7 +29,7 @@ export default function Home() {
     const [favorites, setFavorites] = useState<string[]>([]);
     const [user, setUser] = useState<UserType | null>(null);
     const [processingFavorites, setProcessingFavorites] = useState<Set<string>>(new Set());
-    const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
+    const [availableModels, setAvailableModels] = useState<{ value: string, label: string, id: number, group?: boolean }[]>([]);
 
     useEffect(() => {
         const fetchInitialData = async () => {

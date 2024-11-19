@@ -72,8 +72,9 @@ export default function Footer() {
                 <div className="mt-8 pt-8 border-t border-border text-sm text-center">
                     <p className="text-muted-foreground">&copy; {new Date().getFullYear()} AutoAZ. Toate drepturile rezervate.</p>
                     <p className="mt-2">
-                        <Link href="#" className="text-muted-foreground hover:text-primary">Politica de Confidențialitate</Link> |
-                        <Link href="#" className="text-muted-foreground hover:text-primary ml-2">Termeni și Condiții</Link>
+                        <Link href="#" className="text-muted-foreground hover:text-primary hover:underline">Politica de Confidențialitate</Link>
+                        <span className="mx-2 text-muted-foreground">|</span>
+                        <Link href="#" className="text-muted-foreground hover:text-primary hover:underline">Termeni și Condiții</Link>
                     </p>
                 </div>
             </div>

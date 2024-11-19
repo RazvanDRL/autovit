@@ -34,8 +34,8 @@ export default function DropdownSelect({ options, label, placeholder, value, onC
     }, [open]);
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
+        <Popover open={disabled ? false : open} onOpenChange={disabled ? undefined : setOpen}>
+            <PopoverTrigger asChild disabled={disabled}>
                 <div className="flex flex-col gap-2 w-full">
                     <label htmlFor={`dropdown-${label}`} className="text-sm font-[400]">{label}</label>
                     <ButtonDropdown

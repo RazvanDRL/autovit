@@ -20,7 +20,7 @@ export default function Page() {
     const [price, setPrice] = useState(searchParams.get('price') || "");
     const [fuelType, setFuelType] = useState<FuelType | null>(searchParams.get('fuel_type') as FuelType || null);
     const [bodyType, setBodyType] = useState<BodyType | null>(searchParams.get('body_type') as BodyType || null);
-    const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
+    const [availableModels, setAvailableModels] = useState<{ value: string, label: string, id: number, group?: boolean }[]>([]);
     const router = useRouter();
     const [sortOrder, setSortOrder] = useState(searchParams.get('sort') || 'created_at:desc');
 

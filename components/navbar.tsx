@@ -121,10 +121,10 @@ export default function Navbar() {
     };
 
     return (
-        <div className="w-full top-0 left-0 right-0 z-50 bg-white shadow-md border-b border-gray-200 sticky">
+        <nav className="w-full top-0 left-0 right-0 z-50 bg-white shadow-md border-b border-gray-200 sticky">
             <div className="container mx-auto flex justify-between items-center py-2 sm:py-3 px-4 sm:px-8 md:px-16 bg-inherit text-black">
-                <Link href="/" className="flex-shrink-0">
-                    <Image src={Logo} alt="Logo" width={80} height={90} className="w-[80px] sm:w-[90px]" />
+                <Link href="/" className="">
+                    <Image src={Logo} alt="Logo" width={80} height={35} priority />
                 </Link>
 
                 <div className="flex items-center gap-2 sm:gap-4">
@@ -173,7 +173,7 @@ export default function Navbar() {
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
                                         {/* <Link href="/profile">
-                                            <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
+                            s                <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
                                                 <User className="mr-2 h-4 w-4" />
                                                 <span>Profil</span>
                                             </DropdownMenuItem>
@@ -234,6 +234,6 @@ export default function Navbar() {
                     </Link>
                 </div>
             </div>
-        </div>
+        </nav>
     );
 }

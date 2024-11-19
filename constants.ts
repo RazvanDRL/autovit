@@ -5,5 +5,5 @@ const MAX_FILES = 50; // 50 files
 export {
     MAX_UPLOAD_SIZE,
     MAX_LENGTH,
-    MAX_FILES
+    MAX_FILES,
 };  

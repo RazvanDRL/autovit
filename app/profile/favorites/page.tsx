@@ -166,7 +166,7 @@ export default function FavoritesPage() {
                                 photo={ad.photos[0]}
                                 year={ad.year}
                                 km={ad.km}
-                                fuelType={ad.fuel_type}
+                                fuel_type={ad.fuel_type}
                                 isFavorite={true}
                                 onFavoriteClick={(e) => handleFavorite(e, ad.id)}
                                 isProcessing={processingFavorites.has(ad.id)}

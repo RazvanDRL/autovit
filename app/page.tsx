@@ -15,32 +15,7 @@ import { User as UserType } from '@supabase/supabase-js';
 import { FAVORITES_UPDATED_EVENT } from '@/components/navbar';
 import Footer from '@/components/footer';
 import CarSearch from '@/components/CarSearch';
-
-const fuelTypes = [
-    { value: "Petrol", label: "Petrol" },
-    { value: "Diesel", label: "Diesel" },
-    { value: "Electric", label: "Electric" },
-    { value: "Hybrid", label: "Hybrid" },
-];
-
-const transmissions = [
-    { value: "Automatic", label: "Automatic" },
-    { value: "Manual", label: "Manual" },
-    { value: "Semi-automatic", label: "Semi-automatic" },
-];
-
-type Ad = {
-    id: string;
-    brand: string;
-    model: string;
-    price: number;
-    location: string;
-    date: string;
-    photos: string[];
-    year: number;
-    km: number;
-    fuelType: string;
-}
+import { Ad, BodyType, FuelType } from '@/types/schema';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -51,16 +26,14 @@ export default function Home() {
     const [year, setYear] = useState("");
     const [price, setPrice] = useState("");
     const [color, setColor] = useState("");
-    const [fuelType, setFuelType] = useState("");
+    const [fuelType, setFuelType] = useState<FuelType | null>(null);
     const [transmission, setTransmission] = useState("");
-    const [bodyType, setBodyType] = useState("");
+    const [bodyType, setBodyType] = useState<BodyType | null>(null);
     const [cards, setCards] = useState<Ad[]>([]);
     const [loading, setLoading] = useState(false);
     const [favorites, setFavorites] = useState<string[]>([]);
     const [user, setUser] = useState<UserType | null>(null);
     const [processingFavorites, setProcessingFavorites] = useState<Set<string>>(new Set());
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
     const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
 
     useEffect(() => {
@@ -93,7 +66,6 @@ export default function Home() {
 
                 if (listingsResponse.data) {
                     setCards(listingsResponse.data);
-                    setHasMore(listingsResponse.data.length === ITEMS_PER_PAGE);
                 }
             } catch (error) {
                 console.error('Error fetching initial data:', error);
@@ -157,32 +129,6 @@ export default function Home() {
         fetchModels();
     }, [brand]);
 
-    const loadMore = async () => {
-        if (!hasMore || loading) return;
-
-        try {
-            const from = page * ITEMS_PER_PAGE;
-            const to = from + ITEMS_PER_PAGE - 1;
-
-            const { data, error } = await supabase
-                .from('listings')
-                .select('*')
-                .range(from, to)
-                .order('created_at', { ascending: false });
-
-            if (error) throw error;
-
-            if (data) {
-                setCards(prev => [...prev, ...data]);
-                setHasMore(data.length === ITEMS_PER_PAGE);
-                setPage(prev => prev + 1);
-            }
-        } catch (error) {
-            console.error('Error loading more listings:', error);
-            toast.error("Couldn't load more listings");
-        }
-    };
-
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -200,8 +146,8 @@ export default function Home() {
         const params: { [key: string]: string | undefined } = {
             price: price.replace(/[^0-9]/g, ''),
             year: year,
-            body_type: bodyType,
-            fuel_type: fuelType
+            body_type: bodyType as string,
+            fuel_type: fuelType as string
         };
 
         // Add non-empty parameters to URLSearchParams
@@ -301,9 +247,9 @@ export default function Home() {
                     setPrice={setPrice}
                     year={year}
                     setYear={setYear}
-                    fuelType={fuelType}
+                    fuelType={fuelType as FuelType}
                     setFuelType={setFuelType}
-                    bodyType={bodyType}
+                    bodyType={bodyType as BodyType}
                     setBodyType={setBodyType}
                     availableModels={availableModels}
                     onSubmit={handleSearch}
@@ -317,23 +263,16 @@ export default function Home() {
                             brand={card.brand}
                             model={card.model}
                             price={card.price}
-                            location={card.location}
+                            location={card.location_city + ", " + card.location_county}
                             year={card.year}
                             km={card.km}
-                            fuelType={card.fuelType}
+                            fuel_type={card.fuel_type}
                             isFavorite={favorites.includes(card.id)}
                             onFavoriteClick={handleFavorite}
                             isProcessing={processingFavorites.has(card.id)}
                         />
                     ))}
                 </div>
-                {hasMore && (
-                    <div className="flex justify-center mt-8">
-                        <Button onClick={loadMore} variant="outline">
-                            Load More
-                        </Button>
-                    </div>
-                )}
             </main>
             <Footer />
         </div>

@@ -48,6 +48,7 @@ import cities from '@/lib/cities.json';
 import { County, fetchCounties } from '@/lib/index';
 import { carBrands } from '@/lib/carBrands';
 import DropdownSelect from '@/components/dropdownSelect';
+import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
 
 const years = Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i);
 
@@ -81,6 +82,7 @@ const formSchema = z.object({
     }),
     transmission: z.string().min(2).max(50),
     fuel_type: z.string().min(2).max(50),
+    body_type: z.string().min(2).max(50),
     location_city: z.string().min(2).max(50),
     location_county: z.string().min(2).max(50),
     description: z.string().min(30).max(9000),
@@ -273,6 +275,14 @@ export default function CarAdForm() {
             }
         }
     }
+
+    const fuelTypes = fuel_types
+        .filter(Boolean)
+        .map(type => ({ value: type as string, label: type as string }));
+
+    const bodyTypes = body_types
+        .filter(Boolean)
+        .map(type => ({ value: type as string, label: type as string }));
 
     if (loading) return <Loading />;
 
@@ -507,13 +517,31 @@ export default function CarAdForm() {
                                             <FormControl>
                                                 <div className='flex items-center w-2/3'>
                                                     <DropdownSelect
-                                                        options={[
-                                                            { value: "Benzina", label: "Benzina" },
-                                                            { value: "Motorina", label: "Motorina" },
-                                                            { value: "Hibrid", label: "Hibrid" },
-                                                            { value: "Electric", label: "Electric" },
-                                                        ]}
+                                                        options={fuelTypes}
                                                         placeholder="Selecteaza un tip de combustibil"
+                                                        value={field.value}
+                                                        onChange={field.onChange}
+                                                        className="mt-1 p-6 w-full"
+                                                    />
+                                                    <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
+                                                </div>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField
+                                    control={form.control}
+                                    name="body_type"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Tipul de caroserie</FormLabel>
+                                            <FormControl>
+                                                <div className='flex items-center w-2/3'>
+                                                    <DropdownSelect
+                                                        options={bodyTypes}
+                                                        placeholder="Selecteaza un tip de caroserie"
                                                         value={field.value}
                                                         onChange={field.onChange}
                                                         className="mt-1 p-6 w-full"

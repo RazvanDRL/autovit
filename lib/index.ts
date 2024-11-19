@@ -1,3 +1,5 @@
+import { supabase } from "./supabaseClient";
+
 export interface County {
     nume: string;
     simplu?: string;
@@ -6,14 +8,16 @@ export interface County {
 
 export const fetchCounties = async (countyCode: string) => {
     try {
-        const response = await fetch(`https://roloca.coldfuse.io/orase/${countyCode}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data: County[] = await response.json();
-        return data.filter(county => !county.comuna).map(county => ({
-            ...county,
-            nume: county.simplu || county.nume
+        const { data, error } = await supabase
+            .from('cities')
+            .select('name')
+            .eq('county_code', countyCode);
+
+        if (error) throw error;
+
+        return data.map(city => ({
+            nume: city.name,
+            simplu: city.name
         }));
     } catch (error) {
         console.error("Error fetching counties:", error);

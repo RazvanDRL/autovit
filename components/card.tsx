@@ -13,7 +13,7 @@ interface CardProps {
     size?: "small" | "medium" | "large"
     year: number
     km: number
-    fuelType: string
+    fuel_type: string
     isFavorite?: boolean
     onFavoriteClick?: (e: React.MouseEvent, id: string) => void
     isProcessing?: boolean
@@ -29,7 +29,7 @@ export default function Card({
     size = "medium",
     year,
     km,
-    fuelType,
+    fuel_type,
     isFavorite = false,
     onFavoriteClick,
     isProcessing = false,
@@ -122,7 +122,7 @@ export default function Card({
                     </div>
                     <div className="flex items-center mt-1">
                         <Fuel size={config.iconSize} className="mr-1" />
-                        <span>{fuelType}</span>
+                        <span>{fuel_type}</span>
                     </div>
                 </div>
                 <div

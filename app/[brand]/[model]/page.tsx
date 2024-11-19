@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/navbar";
 import Breadcrumb from "@/components/breadcrumb";
-import { Ad } from "@/types/schema";
+import { Ad, FuelType, BodyType } from "@/types/schema";
 import CarSearch from "@/components/CarSearch";
 import Footer from "@/components/footer";
 import { carBrands } from "@/lib/carBrands";
@@ -18,8 +18,8 @@ export default function Page() {
     const [model, setModel] = useState(decodeURIComponent(params.model));
     const [year, setYear] = useState(searchParams.get('year') || "");
     const [price, setPrice] = useState(searchParams.get('price') || "");
-    const [fuelType, setFuelType] = useState(searchParams.get('fuel_type') || "");
-    const [bodyType, setBodyType] = useState(searchParams.get('body_type') || "");
+    const [fuelType, setFuelType] = useState<FuelType | null>(searchParams.get('fuel_type') as FuelType || null);
+    const [bodyType, setBodyType] = useState<BodyType | null>(searchParams.get('body_type') as BodyType || null);
     const [availableModels, setAvailableModels] = useState<{ value: string, label: string }[]>([]);
     const router = useRouter();
     const [sortOrder, setSortOrder] = useState(searchParams.get('sort') || 'created_at:desc');
@@ -150,9 +150,9 @@ export default function Page() {
                         setPrice={setPrice}
                         year={year}
                         setYear={setYear}
-                        fuelType={fuelType}
+                        fuelType={fuelType as FuelType}
                         setFuelType={setFuelType}
-                        bodyType={bodyType}
+                        bodyType={bodyType as BodyType}
                         setBodyType={setBodyType}
                         availableModels={availableModels}
                         onSubmit={handleSearch}

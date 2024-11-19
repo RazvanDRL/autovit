@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import DropdownSelect from '@/components/dropdownSelect';
 import { carBrands } from '@/lib/carBrands';
 import { years } from '@/lib/years';
-import { colors } from '@/lib/colors';
+import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
 
 const prices = [
     { value: "1000", label: "1000 EUR" },
@@ -29,28 +29,8 @@ const prices = [
     { value: "100000", label: "100000 EUR" },
 ];
 
-const fuelTypes = [
-    { value: "Petrol", label: "Petrol" },
-    { value: "Diesel", label: "Diesel" },
-    { value: "Electric", label: "Electric" },
-    { value: "Hybrid", label: "Hybrid" },
-];
-
-const transmissions = [
-    { value: "Automatic", label: "Automatic" },
-    { value: "Manual", label: "Manual" },
-    { value: "Semi-automatic", label: "Semi-automatic" },
-];
-
-const bodyTypes = [
-    { value: "Sedan", label: "Sedan" },
-    { value: "Hatchback", label: "Hatchback" },
-    { value: "SUV", label: "SUV" },
-    { value: "Coupe", label: "Coupe" },
-    { value: "Convertible", label: "Convertible" },
-    { value: "Wagon", label: "Wagon" },
-    { value: "Other", label: "Other" },
-];
+const bodyTypes = body_types.map(type => ({ value: type, label: type }));
+const fuelTypes = fuel_types.map(type => ({ value: type, label: type }));
 
 interface CarSearchProps {
     brand: string;
@@ -61,10 +41,10 @@ interface CarSearchProps {
     setPrice: (value: string) => void;
     year: string;
     setYear: (value: string) => void;
-    fuelType: string;
-    setFuelType: (value: string) => void;
-    bodyType: string;
-    setBodyType: (value: string) => void;
+    fuelType: FuelType;
+    setFuelType: (value: FuelType) => void;
+    bodyType: BodyType;
+    setBodyType: (value: BodyType) => void;
     availableModels: { value: string, label: string }[];
     onSubmit: (e: React.FormEvent) => void;
 }
@@ -130,7 +110,7 @@ export default function CarSearch({
                         options={bodyTypes}
                         placeholder="Tip caroserie"
                         value={bodyType}
-                        onChange={setBodyType}
+                        onChange={(value: string) => setBodyType(value as BodyType)}
                         className="p-6"
                     />
                 </div>
@@ -139,7 +119,7 @@ export default function CarSearch({
                         options={fuelTypes}
                         placeholder="Combustibil"
                         value={fuelType}
-                        onChange={setFuelType}
+                        onChange={(value: string) => setFuelType(value as FuelType)}
                         className="p-6"
                     />
                 </div>

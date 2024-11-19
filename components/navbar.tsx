@@ -172,12 +172,12 @@ export default function Navbar() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
-                                        <Link href="/profile">
+                                        {/* <Link href="/profile">
                                             <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
                                                 <User className="mr-2 h-4 w-4" />
                                                 <span>Profil</span>
                                             </DropdownMenuItem>
-                                        </Link>
+                                        </Link> */}
                                         <Link href="/profile/myads">
                                             <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
                                                 <CreditCard className="mr-2 h-4 w-4" />

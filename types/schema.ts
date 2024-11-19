@@ -16,6 +16,7 @@ export type Ad = {
     power: number,
     km: number,
     fuel_type: string,
+    body_type: string,
     year: number,
     location_city: string,
     location_county: string,
@@ -29,3 +30,9 @@ export type Ad = {
     brand_id: number,
     model_id: number,
 }
+
+export type BodyType = "Sedan" | "Hatchback" | "SUV" | "Coupe" | "Cabriolet" | "Pickup"; 
+export type FuelType = "Diesel" | "Benzina" | "Electric" | "Hybrid";
+
+export const body_types = ["Sedan", "Hatchback", "SUV", "Coupe", "Cabriolet", "Pickup"] as const;
+export const fuel_types = ["Diesel", "Benzina", "Electric", "Hybrid"] as const;

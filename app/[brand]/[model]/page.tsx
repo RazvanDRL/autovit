@@ -25,6 +25,7 @@ export default function Page() {
     const [sortOrder, setSortOrder] = useState(searchParams.get('sort') || 'created_at:desc');
     const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
     const itemsPerPage = 24;
+    const [isLoading, setIsLoading] = useState(true);
 
     const sortOptions = [
         { value: 'created_at:desc', label: 'Cele mai noi' },
@@ -38,38 +39,43 @@ export default function Page() {
     ];
 
     const fetchAds = useCallback(async (filter: string) => {
-        const modelIsGroup = availableModels.find(m => m.value === decodeURIComponent(params.model))?.group;
+        setIsLoading(true);
+        try {
+            const modelIsGroup = availableModels.find(m => m.value === decodeURIComponent(params.model))?.group;
 
-        let query = supabase
-            .from('listings')
-            .select('*')
-            .ilike('brand', params.brand)
-            .ilike(modelIsGroup ? 'group' : 'model', decodeURIComponent(params.model))
-            .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
+            let query = supabase
+                .from('listings')
+                .select('*')
+                .ilike('brand', params.brand)
+                .ilike(modelIsGroup ? 'group' : 'model', decodeURIComponent(params.model))
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
 
-        if (price) {
-            query = query.lte('price', price.replace(/[^0-9]/g, ''));
+            if (price) {
+                query = query.lte('price', price.replace(/[^0-9]/g, ''));
+            }
+
+            if (year) {
+                query = query.lte('year', year);
+            }
+
+            if (fuelType) {
+                query = query.eq('fuel_type', fuelType);
+            }
+
+            if (bodyType) {
+                query = query.eq('body_type', bodyType);
+            }
+
+            // Add sorting
+            const [column, order] = filter.split(':');
+            query = query.order(column, { ascending: order === 'asc' });
+
+            let { data: ads, error } = await query;
+            if (error) console.log('error', error);
+            setAds(ads || []);
+        } finally {
+            setIsLoading(false);
         }
-
-        if (year) {
-            query = query.lte('year', year);
-        }
-
-        if (fuelType) {
-            query = query.eq('fuel_type', fuelType);
-        }
-
-        if (bodyType) {
-            query = query.eq('body_type', bodyType);
-        }
-
-        // Add sorting
-        const [column, order] = filter.split(':');
-        query = query.order(column, { ascending: order === 'asc' });
-
-        let { data: ads, error } = await query;
-        if (error) console.log('error', error);
-        setAds(ads || []);
     }, [params.brand, params.model, price, year, fuelType, bodyType, availableModels, currentPage]);
 
     useEffect(() => {
@@ -177,25 +183,112 @@ export default function Page() {
                     </select>
                 </div>
                 <div className="grid grid-rows-3 gap-3">
-                    {ads.map((ad) => (
-                        <CardHorizontal
-                            key={ad.id}
-                            listingId={ad.id}
-                            id={ad.photos[0]}
-                            className="row-span-1"
-                            title={ad.brand + " " + ad.model}
-                            price={ad.price}
-                            engine_size={ad.engine_size}
-                            power={ad.power}
-                            km={ad.km}
-                            fuelType={ad.fuel_type}
-                            year={ad.year}
-                            location={ad.location_city + ", " + ad.location_county}
-                            description={ad.short_description}
-                            created_at={ad.created_at}
-                            is_company={ad.is_company}
-                        />
-                    ))}
+                    {isLoading ? (
+                        // Skeleton loading state that matches CardHorizontal layout
+                        Array(6).fill(0).map((_, index) => (
+                            <div key={index} className="relative py-4 md:py-8 border-b border-gray-200 bg-white rounded-sm max-w-[55rem] animate-pulse">
+                                <div className="flex flex-col md:flex-row md:items-start">
+                                    {/* Image skeleton */}
+                                    <div className="w-full md:w-[280px] md:h-[210px] aspect-[4/3] h-auto relative bg-gray-200 rounded-sm" />
+
+                                    {/* Content skeleton */}
+                                    <div className="flex-1 pt-4 md:pt-0 md:pl-4">
+                                        <div className="flex flex-col md:flex-row md:justify-between">
+                                            <div>
+                                                {/* Title */}
+                                                <div className="h-6 bg-gray-200 rounded w-3/4 mb-2" />
+                                                {/* Subtitle */}
+                                                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4" />
+
+                                                {/* Stats row */}
+                                                <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-4 mb-4">
+                                                    <div className="h-4 bg-gray-200 rounded w-20" />
+                                                    <div className="h-4 bg-gray-200 rounded w-24" />
+                                                    <div className="h-4 bg-gray-200 rounded w-20" />
+                                                </div>
+
+                                                {/* Location */}
+                                                <div className="h-4 bg-gray-200 rounded w-40 mb-4 md:mb-10" />
+
+                                                {/* Time and dealer status */}
+                                                <div className="h-3 bg-gray-200 rounded w-32 mb-2" />
+                                                <div className="h-3 bg-gray-200 rounded w-24" />
+                                            </div>
+
+                                            {/* Price */}
+                                            <div className="h-8 bg-gray-200 rounded w-32 mt-4 md:mt-0" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : ads.length > 0 ? (
+                        // Existing ads mapping
+                        ads.map((ad) => (
+                            <CardHorizontal
+                                key={ad.id}
+                                listingId={ad.id}
+                                id={ad.photos[0]}
+                                className="row-span-1"
+                                title={ad.brand + " " + ad.model}
+                                price={ad.price}
+                                engine_size={ad.engine_size}
+                                power={ad.power}
+                                km={ad.km}
+                                fuelType={ad.fuel_type}
+                                year={ad.year}
+                                location={ad.location_city + ", " + ad.location_county}
+                                description={ad.short_description}
+                                created_at={ad.created_at}
+                                is_company={ad.is_company}
+                            />
+                        ))
+                    ) : (
+                        // Enhanced empty state with CTA
+                        <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border rounded-lg bg-white">
+                            <div className="mb-4">
+                                <svg
+                                    className="mx-auto h-12 w-12 text-gray-400"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    aria-hidden="true"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15.182 16.318A4.486 4.486 0 0012.016 15a4.486 4.486 0 00-3.198 1.318M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z"
+                                    />
+                                </svg>
+                            </div>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900">Nu am găsit anunțuri</h3>
+                            <p className="mt-1 text-sm text-gray-500">
+                                Nu există anunțuri care să corespundă criteriilor tale de căutare.
+                            </p>
+                            <div className="mt-6">
+                                <a
+                                    href="/adauga"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                >
+                                    <svg
+                                        className="-ml-1 mr-2 h-5 w-5"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            fillRule="evenodd"
+                                            d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                                            clipRule="evenodd"
+                                        />
+                                    </svg>
+                                    Adaugă primul anunț
+                                </a>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <div className="flex justify-center my-8">
                     <button

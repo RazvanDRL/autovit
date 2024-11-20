@@ -55,7 +55,7 @@ export default function Page() {
             }
 
             if (year) {
-                query = query.lte('year', year);
+                query = query.gte('year', year);
             }
 
             if (fuelType) {

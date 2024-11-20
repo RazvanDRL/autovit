@@ -23,6 +23,8 @@ export default function Page() {
     const [availableModels, setAvailableModels] = useState<{ value: string, label: string, id: number, group?: boolean }[]>([]);
     const router = useRouter();
     const [sortOrder, setSortOrder] = useState(searchParams.get('sort') || 'created_at:desc');
+    const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page')) || 1);
+    const itemsPerPage = 24;
 
     const sortOptions = [
         { value: 'created_at:desc', label: 'Cele mai noi' },
@@ -43,7 +45,7 @@ export default function Page() {
             .select('*')
             .ilike('brand', params.brand)
             .ilike(modelIsGroup ? 'group' : 'model', decodeURIComponent(params.model))
-            .limit(10);
+            .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
 
         if (price) {
             query = query.lte('price', price.replace(/[^0-9]/g, ''));
@@ -68,11 +70,11 @@ export default function Page() {
         let { data: ads, error } = await query;
         if (error) console.log('error', error);
         setAds(ads || []);
-    }, [params.brand, params.model, price, year, fuelType, bodyType, availableModels]);
+    }, [params.brand, params.model, price, year, fuelType, bodyType, availableModels, currentPage]);
 
     useEffect(() => {
         fetchAds(sortOrder);
-    }, [sortOrder, fetchAds, params.brand, params.model, price, year, fuelType, bodyType, availableModels]);
+    }, [sortOrder, fetchAds, params.brand, params.model, price, year, fuelType, bodyType, availableModels, currentPage]);
 
     useEffect(() => {
         // Don't update URL during initial render
@@ -84,12 +86,13 @@ export default function Page() {
         if (fuelType) searchParams.append('fuel_type', fuelType);
         if (bodyType) searchParams.append('body_type', bodyType);
         if (sortOrder) searchParams.append('sort', sortOrder);
+        if (currentPage > 1) searchParams.append('page', currentPage.toString());
 
         const queryString = searchParams.toString();
         const url = `/${brand}/${encodeURIComponent(model)}${queryString ? `?${queryString}` : ''}`;
 
         router.replace(url, { scroll: false });
-    }, [price, year, fuelType, bodyType, sortOrder, brand, model, router, params.brand, params.model]);
+    }, [price, year, fuelType, bodyType, sortOrder, brand, model, router, params.brand, params.model, currentPage]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -193,6 +196,23 @@ export default function Page() {
                             is_company={ad.is_company}
                         />
                     ))}
+                </div>
+                <div className="flex justify-center my-8">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 mr-2 border rounded-md disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span className="px-4 py-2">Page {currentPage}</span>
+                    <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={ads.length < itemsPerPage}
+                        className="px-4 py-2 ml-2 border rounded-md disabled:opacity-50"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
             <Footer />

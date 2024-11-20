@@ -29,10 +29,12 @@ export type Ad = {
     is_company: boolean,
     brand_id: number,
     model_id: number,
+    group?: string,
+    group_id?: number
 }
 
 export type BodyType = "Sedan" | "Hatchback" | "SUV" | "Coupe" | "Cabriolet" | "Pickup"; 
-export type FuelType = "Diesel" | "Benzina" | "Electric" | "Hybrid";
+export type FuelType = "Diesel" | "Benzină" | "Electric" | "Hibrid";
 
 export const body_types = ["Sedan", "Hatchback", "SUV", "Coupe", "Cabriolet", "Pickup"] as const;
-export const fuel_types = ["Diesel", "Benzina", "Electric", "Hybrid"] as const;
+export const fuel_types = ["Diesel", "Benzină", "Electric", "Hibrid"] as const;

@@ -36,11 +36,13 @@ export default function Page() {
     ];
 
     const fetchAds = useCallback(async (filter: string) => {
+        const modelIsGroup = availableModels.find(m => m.value === decodeURIComponent(params.model))?.group;
+
         let query = supabase
             .from('listings')
             .select('*')
             .ilike('brand', params.brand)
-            .ilike('model', decodeURIComponent(params.model))
+            .ilike(modelIsGroup ? 'group' : 'model', decodeURIComponent(params.model))
             .limit(10);
 
         if (price) {
@@ -66,11 +68,11 @@ export default function Page() {
         let { data: ads, error } = await query;
         if (error) console.log('error', error);
         setAds(ads || []);
-    }, [params.brand, params.model, price, year, fuelType, bodyType]);
+    }, [params.brand, params.model, price, year, fuelType, bodyType, availableModels]);
 
     useEffect(() => {
         fetchAds(sortOrder);
-    }, [sortOrder, fetchAds, params.brand, params.model, price, year, fuelType, bodyType]);
+    }, [sortOrder, fetchAds, params.brand, params.model, price, year, fuelType, bodyType, availableModels]);
 
     useEffect(() => {
         // Don't update URL during initial render

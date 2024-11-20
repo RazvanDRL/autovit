@@ -176,7 +176,7 @@ export default function CarAdForm() {
     const [listingId, setListingId] = useState("");
     const [loading, setLoading] = useState(true);
     const [counties, setCounties] = useState<County[]>([]);
-    const [availableModels, setAvailableModels] = useState<{ value: string; label: string; id?: number; group?: boolean; }[]>([]);
+    const [availableModels, setAvailableModels] = useState<{ value: string; label: string; id?: number; group?: boolean; groupId?: number, subModel?: boolean }[]>([]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -249,10 +249,6 @@ export default function CarAdForm() {
             return;
         }
 
-        // if (profileData.is_company) {
-        //     data.is_company = true;
-        // }
-
         data.is_company = false;
         data.user_phone = '0770429755';
 
@@ -260,9 +256,29 @@ export default function CarAdForm() {
             data.user_full_name = profileData.name || '';
         }
 
+        // Find the selected model from availableModels
+        const selectedModel = availableModels.find(m => m.label === data.model);
+
+        // Find the parent group for subModels
+        let group = null;
+        let group_id = null;
+        if (selectedModel?.subModel) {
+            const parentGroup = availableModels.slice(0, availableModels.indexOf(selectedModel))
+                .reverse()
+                .find(m => m.group === true);
+            group = parentGroup?.label || null;
+            group_id = parentGroup?.id || null;
+        }
+
+
         const { data: anuntData, error: anuntError } = await supabase
             .from('listings')
-            .insert([{ ...data, user_id: user?.id }])
+            .insert([{
+                ...data,
+                user_id: user?.id,
+                group: group,
+                group_id: group_id
+            }])
 
         if (anuntError) {
             toast.error('Eroare la adaugarea anuntului!');
@@ -305,7 +321,7 @@ export default function CarAdForm() {
                                     name="vin"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="block text-sm font-semibold text-gray-600">VIN</FormLabel>
+                                            <FormLabel className="block text-sm font-semibold text-gray-600">VIN (seria de șasiu)</FormLabel>
                                             <FormControl>
                                                 <div className='flex items-center w-full sm:w-2/3'>
                                                     <Input
@@ -357,7 +373,8 @@ export default function CarAdForm() {
                                                                         value: model.displayName,
                                                                         label: model.displayName,
                                                                         id: model.id,
-                                                                        group: model.group || false
+                                                                        group: model.group || false,
+                                                                        subModel: model.subModel || false
                                                                     })));
                                                                 }
                                                             }
@@ -381,21 +398,38 @@ export default function CarAdForm() {
                                             <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Model</FormLabel>
                                             <FormControl>
                                                 <div className='flex items-center w-full sm:w-2/3'>
-                                                    <DropdownSelect
-                                                        options={availableModels}
-                                                        placeholder="Selecteaza un model"
-                                                        value={field.value}
-                                                        onChange={(value) => {
-                                                            field.onChange(value);
-                                                            // Set model_id
-                                                            const selectedModel = availableModels.find(m => m.label === value);
-                                                            if (selectedModel?.id) {
-                                                                form.setValue('model_id', selectedModel.id);
-                                                            }
-                                                        }}
-                                                        className="mt-1 p-4 sm:p-6 w-full"
-                                                        disabled={!form.watch("brand")}
-                                                    />
+                                                    <div className="relative w-full">
+                                                        <select
+                                                            id="model-select"
+                                                            value={field.value}
+                                                            onChange={(e) => {
+                                                                field.onChange(e.target.value);
+                                                                // Set model_id
+                                                                const selectedModel = availableModels.find(m => m.label === e.target.value);
+                                                                if (selectedModel?.id) {
+                                                                    form.setValue('model_id', selectedModel.id);
+                                                                }
+                                                            }}
+                                                            disabled={!form.watch("brand")}
+                                                            className={`w-full appearance-none text-md justify-between rounded-sm font-[400] p-3 pl-6 pr-12 ${!form.watch("brand")
+                                                                ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                                                : "bg-[#EBECEF] border-[#EBECEF]"
+                                                                }`}
+                                                        >
+                                                            <option value="">Selectează modelul</option>
+                                                            {availableModels.map((option) => (
+                                                                <option
+                                                                    key={option.value}
+                                                                    value={option.value}
+                                                                    disabled={option.group}
+                                                                >
+                                                                    {option.group ? option.label : `\u00A0\u00A0\u00A0\u00A0${option.label}`}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <ChevronDown className={`absolute right-6 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 pointer-events-none ${!form.watch("brand") ? "text-gray-400" : ""
+                                                            }`} />
+                                                    </div>
                                                     <Check className={cn("ml-3 h-6 w-6 text-green-500", field.value ? "opacity-100" : "opacity-0")} />
                                                 </div>
                                             </FormControl>
@@ -438,7 +472,7 @@ export default function CarAdForm() {
                                         <FormItem className='mt-8'>
                                             <FormLabel className='block text-sm font-semibold text-gray-600'>Km</FormLabel>
                                             <FormControl>
-                                                <div className='flex items-center w-2/3'>
+                                                <div className='flex items-center w-2/3 font-mono'>
                                                     <div className='relative w-full sm:w-1/3'>
                                                         <InputCustom
                                                             id="km"

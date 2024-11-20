@@ -87,8 +87,8 @@ export default function CarSearch({
                                 onChange={(e) => setModel(e.target.value)}
                                 disabled={!brand || brand === "" || availableModels.length === 0}
                                 className={`w-full appearance-none text-md justify-between rounded-sm font-[400] p-3 pr-12 ${!brand || brand === "" || availableModels.length === 0
-                                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                                        : "bg-[#EBECEF] border-[#EBECEF]"
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : "bg-[#EBECEF] border-[#EBECEF]"
                                     }`}
                             >
                                 <option value="">Selectează modelul</option>
@@ -99,8 +99,8 @@ export default function CarSearch({
                                 ))}
                             </select>
                             <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 shrink-0 pointer-events-none ${!brand || brand === "" || availableModels.length === 0
-                                    ? "text-gray-400"
-                                    : ""
+                                ? "text-gray-400"
+                                : ""
                                 }`} />
                         </div>
                     </div>

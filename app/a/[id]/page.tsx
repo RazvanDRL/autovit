@@ -404,6 +404,31 @@ export default function Page() {
                                     </button>
                                 </div>
                                 <Separator className="my-8" />
+
+                                {/* Equipment */}
+                                {ad.equipment && Object.keys(ad.equipment).length > 0 && (
+                                    <div>
+                                        <h2 className="text-3xl font-semibold mb-6">Dotări</h2>
+                                        <div className="space-y-6">
+                                            {Object.entries(ad.equipment).map(([category, items]) => (
+                                                <div key={category}>
+                                                    <h3 className="text-lg font-semibold mb-3">{category}</h3>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {items.map((item) => (
+                                                            <div
+                                                                key={item.value}
+                                                                className="bg-gray-100 px-3 py-1.5 rounded-full text-sm"
+                                                            >
+                                                                {item.label}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <Separator className="my-8" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="pl-8 flex-shrink-0 lg:block hidden">

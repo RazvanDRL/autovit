@@ -49,6 +49,14 @@ import { County, fetchCounties } from '@/lib/index';
 import { carBrands } from '@/lib/carBrands';
 import DropdownSelect from '@/components/dropdownSelect';
 import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
+import { equipment_types } from '@/types/schema';
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const years = Array.from({ length: new Date().getFullYear() - 1900 + 1 }, (_, i) => new Date().getFullYear() - i);
 
@@ -91,6 +99,7 @@ const formSchema = z.object({
     doors: z.string().min(3).max(3),
     brand_id: z.number().int().min(1),
     model_id: z.number().int().min(1),
+    equipment: z.array(z.string()),
 }).refine(data => {
     if (data.year === new Date().getFullYear() && data.km > 10000) {
         return false;
@@ -167,6 +176,61 @@ const DropdownSelectt = ({ options, placeholder, value, onChange, className, dis
     );
 };
 
+const EquipmentGrid = ({ options, value, onChange }: {
+    options: { value: string; label: string; category: string }[];
+    value: string[];
+    onChange: (value: string[]) => void;
+}) => {
+    const groupedOptions = options.reduce((acc, curr) => {
+        if (!acc[curr.category]) {
+            acc[curr.category] = [];
+        }
+        acc[curr.category].push(curr);
+        return acc;
+    }, {} as Record<string, typeof options>);
+
+    return (
+        <Accordion type="multiple" className="w-full">
+            {Object.entries(groupedOptions).map(([category, items]) => (
+                <AccordionItem value={category} key={category}>
+                    <AccordionTrigger className="text-base font-semibold justify-between no-underline hover:no-underline">
+                        <div className="flex items-center">
+                            {category}
+                            <span className="text-sm font-normal text-gray-500 ml-2">
+                                ({items.filter(item => value.includes(item.value)).length}/{items.length})
+                            </span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 select-none">
+                            {items.map((item) => (
+                                <div key={item.value} className="flex items-center space-x-3">
+                                    <Checkbox
+                                        id={item.value}
+                                        checked={value.includes(item.value)}
+                                        onCheckedChange={(checked) => {
+                                            if (checked) {
+                                                onChange([...value, item.value]);
+                                            } else {
+                                                onChange(value.filter((v) => v !== item.value));
+                                            }
+                                        }}
+                                    />
+                                    <label
+                                        htmlFor={item.value}
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                    >
+                                        {item.label}
+                                    </label>
+                                </div>
+                            ))}
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+            ))}
+        </Accordion>
+    );
+};
 
 export default function CarAdForm() {
     const router = useRouter();
@@ -204,6 +268,7 @@ export default function CarAdForm() {
             km: undefined,
             brand_id: 0,
             model_id: 0,
+            equipment: [],
         },
     });
 
@@ -270,11 +335,30 @@ export default function CarAdForm() {
             group_id = parentGroup?.id || null;
         }
 
+        // Transform selected equipment values into full objects with all metadata
+        const equipmentByCategory = equipment_types.reduce((acc, item) => {
+            if (data.equipment.includes(item.value)) {
+                if (!acc[item.category]) {
+                    acc[item.category] = [];
+                }
+                acc[item.category].push({
+                    value: item.value,
+                    label: item.label,
+                    category: item.category
+                });
+            }
+            return acc;
+        }, {} as Record<string, Array<{
+            value: string;
+            label: string;
+            category: string;
+        }>>);
 
         const { data: anuntData, error: anuntError } = await supabase
             .from('listings')
             .insert([{
                 ...data,
+                equipment: equipmentByCategory,
                 user_id: user?.id,
                 group: group,
                 group_id: group_id
@@ -940,6 +1024,28 @@ export default function CarAdForm() {
                                     />
                                 </div>
 
+                                {/* Equipment */}
+                                <FormField
+                                    control={form.control}
+                                    name="equipment"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="block mt-8 text-sm font-semibold text-gray-600">Dotări</FormLabel>
+                                            <FormControl>
+                                                <EquipmentGrid
+                                                    options={equipment_types.map(type => ({
+                                                        value: type.value,
+                                                        label: type.label,
+                                                        category: type.category
+                                                    }))}
+                                                    value={field.value}
+                                                    onChange={field.onChange}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
 
                                 {/* Submit Button */}
                                 <div className='flex justify-center sm:justify-end w-full'>

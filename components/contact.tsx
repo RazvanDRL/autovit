@@ -16,7 +16,7 @@ interface ContactCardProps {
 
 export const ContactCard = (props: ContactCardProps) => {
     const [showPhone, setShowPhone] = useState(false);
-    const { user_id, user_phone, user_full_name, is_company } = props;
+    const { user_id, user_phone, user_full_name, user_avatar, is_company, } = props;
 
     const handleRevealPhone = () => {
         setShowPhone(true);
@@ -31,12 +31,12 @@ export const ContactCard = (props: ContactCardProps) => {
             <div className="hidden lg:flex items-center justify-between">
                 <div>
                     <h3 className="text-xs opacity-50">Postat de</h3>
-                    <Link className="hover:text-red-600" href={`/profile/${user_id}`}>{user_full_name}</Link>
+                    <div className="">{user_full_name}</div>
                     <div className="flex items-center mt-1">
                         {is_company ? (
                             <>
-                                <Building2 className="h-4 w-4 mr-1 text-blue-500" />
-                                <span className="text-sm text-red-500">Dealer</span>
+                                <Building2 className="h-4 w-4 mr-1 text-gray-500" />
+                                <span className="text-sm text-gray-500">Dealer</span>
                             </>
                         ) : (
                             <>
@@ -46,7 +46,11 @@ export const ContactCard = (props: ContactCardProps) => {
                         )}
                     </div>
                 </div>
-                <Image src={"/image.png"} alt="Avatar" height={50} width={50} className="" />
+                {user_avatar ?
+                    <Image src={user_avatar} alt="Avatar" height={50} width={50} className="rounded-full" />
+                    :
+                    <User className="h-10 w-10" />
+                }
             </div>
 
             <div className="space-y-2 lg:space-y-4">

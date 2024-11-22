@@ -26,11 +26,19 @@ import { useParams } from "next/navigation";
 import Breadcrumb from "@/components/breadcrumb";
 import { Ad } from "@/types/schema";
 import { FAVORITES_UPDATED_EVENT } from "@/components/navbar";
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion"
+import SimilarAds from "@/components/similarAds";
 
 export default function Page() {
     const params = useParams<{ id: string }>();
     const [ad, setAd] = useState<Ad | null>(null);
     const [user, setUser] = useState<UserType | null>(null);
+    const [userAvatar, setUserAvatar] = useState<string | null>(null);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
     const [api, setApi] = useState<CarouselApi>();
     const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
@@ -74,6 +82,16 @@ export default function Page() {
                 .select('*')
                 .eq('id', params.id)
                 .single()
+
+            const { data: userData, error: userError } = await supabase
+                .from('profiles')
+                .select('avatar')
+                .eq('id', data?.user_id)
+                .single()
+
+            if (userError) console.log('userError', userError)
+            if (userData) setUserAvatar(userData.avatar)
+
             if (error) console.log('error', error)
             if (data) {
                 setAd(data);
@@ -373,7 +391,7 @@ export default function Page() {
                                     </Carousel>
                                 </div>
                             )}
-                            <Separator className="my-8" />
+                            <Separator className="my-12" />
                             <div>
                                 {/* Stats */}
                                 <div className="flex flex-wrap md:grid md:grid-cols-5 gap-2 justify-between mt-4 px-4 sm:px-0">
@@ -385,7 +403,7 @@ export default function Page() {
                                         </div>
                                     ))}
                                 </div>
-                                <Separator className="my-8" />
+                                <Separator className="my-12" />
                                 {/* Description */}
                                 <div>
                                     <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
@@ -408,42 +426,51 @@ export default function Page() {
                                         {isExpanded ? <ChevronUp className="w-5 h-5 ml-1" /> : <ChevronDown className="w-5 h-5 ml-1" />}
                                     </button>
                                 </div>
-                                <Separator className="my-8" />
+                                <Separator className="my-12" />
 
                                 {/* Equipment */}
                                 {ad.equipment && Object.keys(ad.equipment).length > 0 && (
                                     <div>
                                         <h2 className="text-3xl font-semibold mb-6">Dotări</h2>
-                                        <div className="space-y-6">
+                                        <Accordion type="single" collapsible className="w-full">
                                             {Object.entries(ad.equipment).map(([category, items]) => (
-                                                <div key={category}>
-                                                    <h3 className="text-lg font-semibold mb-3">{category}</h3>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {items.map((item) => (
-                                                            <div
-                                                                key={item.value}
-                                                                className="bg-gray-100 px-3 py-1.5 rounded-full text-sm"
-                                                            >
-                                                                {item.label}
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
+                                                <AccordionItem key={category} value={category}>
+                                                    <AccordionTrigger className="text-lg font-medium">
+                                                        {category}
+                                                    </AccordionTrigger>
+                                                    <AccordionContent>
+                                                        <div className="flex flex-wrap gap-2 pt-2">
+                                                            {items.map((item) => (
+                                                                <div
+                                                                    key={item.value}
+                                                                    className="bg-gray-100 px-3 py-1.5 rounded-full text-sm"
+                                                                >
+                                                                    {item.label}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </AccordionContent>
+                                                </AccordionItem>
                                             ))}
-                                        </div>
-                                        <Separator className="my-8" />
+                                        </Accordion>
                                     </div>
                                 )}
                             </div>
                         </div>
-                        <div className="pl-8 flex-shrink-0 lg:block hidden">
-                            <ContactCard user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
-                        </div>
-                        <div className="fixed bottom-0 left-0 right-0 lg:hidden">
-                            <ContactCard user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
-                        </div>
+                        {userAvatar && (
+                            <>
+                                <div className="pl-8 flex-shrink-0 lg:block hidden">
+                                    <ContactCard user_avatar={userAvatar} user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
+                                </div>
+                                <div className="fixed bottom-0 left-0 right-0 lg:hidden">
+                                    <ContactCard user_avatar={userAvatar} user_id={ad.user_id} user_phone={ad.user_phone} user_full_name={ad.user_full_name} is_company={ad.is_company} />
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
+                {/* Similar ads */}
+                <SimilarAds id={params.id} />
             </div>
             <Footer />
         </div >

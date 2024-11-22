@@ -20,12 +20,10 @@ export default function Home() {
     const [model, setModel] = useState("");
     const [year, setYear] = useState("");
     const [price, setPrice] = useState("");
-    const [color, setColor] = useState("");
     const [fuelType, setFuelType] = useState<FuelType | null>(null);
-    const [transmission, setTransmission] = useState("");
     const [bodyType, setBodyType] = useState<BodyType | null>(null);
     const [cards, setCards] = useState<Ad[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [favorites, setFavorites] = useState<string[]>([]);
     const [user, setUser] = useState<UserType | null>(null);
     const [processingFavorites, setProcessingFavorites] = useState<Set<string>>(new Set());
@@ -44,6 +42,7 @@ export default function Home() {
                         .range(0, ITEMS_PER_PAGE - 1)
                         .order('created_at', { ascending: false })
                 ]);
+
 
                 const user = userResponse.data.user;
                 setUser(user);

@@ -24,8 +24,15 @@ export default function Login() {
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get('redirect');
+
       if (user) {
-        router.replace('/');
+        if (redirectPath) {
+          router.replace(decodeURIComponent(redirectPath));
+        } else {
+          router.replace('/');
+        }
       }
       setLoadingUser(false);
     };
@@ -53,10 +60,16 @@ export default function Login() {
   const handleOAuthLogin = async (provider: "google" | "twitter") => {
     try {
       setLoading(true);
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get('redirect');
+
+      const redirectTo = redirectPath ? `${window.location.origin}${redirectPath}` : `${window.location.origin}/complete-profile`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/complete-profile`,
+          redirectTo,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

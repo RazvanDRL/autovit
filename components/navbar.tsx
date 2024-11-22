@@ -2,7 +2,7 @@ import Image from "next/image";
 import Logo from "@/public/logo.svg";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, User, UserRound } from "lucide-react";
+import { Heart, MessageCircle, UserRound } from "lucide-react";
 
 import {
     CreditCard,
@@ -26,7 +26,6 @@ import {
 
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { toast } from "sonner";
 import { User as UserType } from '@supabase/supabase-js';
 // Add this near the top of the file, outside the component
 export const FAVORITES_UPDATED_EVENT = 'favoritesUpdated' as const;
@@ -40,44 +39,23 @@ declare global {
 export default function Navbar() {
     const router = useRouter();
     const [user, setUser] = useState<UserType | null>(null);
-    const [credits, setCredits] = useState(0);
+    // const [credits, setCredits] = useState(0);
     const [favoritesCount, setFavoritesCount] = useState(0);
 
     async function logout() {
-        await supabase.auth.signOut();
-        router.push("/");
-    }
-
-    async function getCredits() {
-        const storedUser = localStorage.getItem('user');
-        let user;
-
-        if (storedUser) {
-            user = JSON.parse(storedUser);
-        } else {
-            const { data: { user: fetchedUser } } = await supabase.auth.getUser();
-            if (fetchedUser) {
-                localStorage.setItem('user', JSON.stringify(fetchedUser));
-                user = fetchedUser;
-            }
-        }
-
-        if (!user) {
-            return;
-        }
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('credits')
-            .eq('id', user.id);
+        const { error } = await supabase.auth.signOut()
 
         if (error) {
-            toast.error(error.message);
+            console.error('Error signing out:', error);
+            return;
         }
 
-        if (data && data.length > 0) {
-            if (data[0].credits)
-                setCredits(Number(data[0].credits));
-        }
+        // Clear user state
+        setUser(null);
+        setFavoritesCount(0);
+
+        // Force a hard navigation to home page
+        router.replace('/');
     }
 
     useEffect(() => {
@@ -116,7 +94,7 @@ export default function Navbar() {
 
     const handleAccountClick = () => {
         if (!user) {
-            router.push("/login");
+            router.replace("/login");
         }
     };
 
@@ -172,12 +150,14 @@ export default function Navbar() {
                                     </DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuGroup>
-                                        {/* <Link href="/profile">
-                            s                <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
-                                                <User className="mr-2 h-4 w-4" />
-                                                <span>Profil</span>
-                                            </DropdownMenuItem>
-                                        </Link> */}
+                                        {/* 
+                                            <Link href="/profile">
+                                                <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
+                                                    <User className="mr-2 h-4 w-4" />
+                                                    <span>Profil</span>
+                                                </DropdownMenuItem>
+                                            </Link> 
+                                        */}
                                         <Link href="/profile/myads">
                                             <DropdownMenuItem className="cursor-pointer focus:bg-gray-100">
                                                 <CreditCard className="mr-2 h-4 w-4" />
@@ -212,7 +192,7 @@ export default function Navbar() {
                                     <DropdownMenuSeparator />
 
                                     <DropdownMenuItem
-                                        onClick={logout}
+                                        onClick={async () => await logout()}
                                         className="cursor-pointer focus:bg-gray-100 text-red-600 focus:text-red-600"
                                     >
                                         <LogOut className="mr-2 h-4 w-4" />

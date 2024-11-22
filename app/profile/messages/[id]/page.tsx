@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { format, isToday, isYesterday } from 'date-fns'
@@ -63,6 +63,7 @@ const sanitizeMessage = (content: string) => {
 }
 
 export default function ChatPage() {
+    const router = useRouter()
     const params = useParams<{ id: string }>()
     const [messages, setMessages] = useState<Message[]>([])
     const [newMessage, setNewMessage] = useState('')
@@ -101,6 +102,11 @@ export default function ChatPage() {
 
     const fetchUsers = useCallback(async () => {
         const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+            router.replace('/login?redirect=/profile/messages/' + params.id)
+        }
+
         setCurrentUser(user)
 
         const { data: otherUserData } = await supabase

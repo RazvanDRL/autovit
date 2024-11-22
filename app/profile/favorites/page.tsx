@@ -23,7 +23,7 @@ export default function FavoritesPage() {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.replace('/login');
+                router.replace('/login?redirect=/profile/favorites');
                 return;
             }
             setUser(user);

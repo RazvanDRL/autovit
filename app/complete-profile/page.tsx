@@ -51,7 +51,7 @@ export default function CompleteProfile() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                router.replace('/login');
+                router.replace('/login?redirect=/complete-profile');
                 return;
             }
 
@@ -63,7 +63,7 @@ export default function CompleteProfile() {
                 .single()
 
             if (!profile) {
-                router.replace('/login');
+                router.replace('/login?redirect=/complete-profile');
                 return;
             }
 

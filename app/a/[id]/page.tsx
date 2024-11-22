@@ -390,9 +390,14 @@ export default function Page() {
                                 <div>
                                     <h2 className="text-3xl font-semibold mb-6">Descriere</h2>
                                     <div
-                                        className={`font-[350] opacity-90 ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""}`}
+                                        className={`font-[350] opacity-90 break-words whitespace-pre-wrap ${!isExpanded ? "max-h-[24em] overflow-hidden" : ""
+                                            }`}
+                                        style={{ wordBreak: 'break-word' }}
                                         dangerouslySetInnerHTML={{
-                                            __html: ad.description.replace(/<p>\s*<\/p>/g, '<br>')
+                                            __html: ad.description
+                                                .replace(/<p>\s*<\/p>/g, '<br>')
+                                            // Add word breaks every 50 characters for sequences without spaces
+                                            // .replace(/(\S{50})/g, '$1\u200B')
                                         }}
                                     />
                                     <button

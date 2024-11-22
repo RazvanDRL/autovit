@@ -83,7 +83,7 @@ export default function Settings() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                router.replace('/login');
+                router.replace('/login?redirect=/profile/settings');
                 return;
             }
 

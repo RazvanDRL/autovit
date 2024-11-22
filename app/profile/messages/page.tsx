@@ -39,7 +39,7 @@ export default function MessagesPage() {
             const { data: { user } } = await supabase.auth.getUser();
 
             if (!user) {
-                router.replace('/login');
+                router.replace('/login?redirect=/profile/messages');
                 return;
             }
 

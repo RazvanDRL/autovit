@@ -35,7 +35,7 @@ function MyAdsContent() {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                router.replace('/login');
+                router.replace('/login?redirect=/profile/myads');
                 return;
             }
             setUser(user);

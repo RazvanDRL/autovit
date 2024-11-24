@@ -23,8 +23,10 @@ import { cn } from '@/lib/utils';
 import Navbar from '@/components/navbar';
 import { Trash, X } from 'lucide-react';
 import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const formSchema = z.object({
+    name: z.string().min(1, "Numele este obligatoriu"),
     phone: z.string().length(10, "Numărul de telefon trebuie să aibă 10 caractere"),
     isDealer: z.boolean(),
     avatar: z.any().optional(),
@@ -40,6 +42,7 @@ export default function CompleteProfile() {
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
+            name: "",
             phone: "",
             isDealer: false,
             avatar: undefined,
@@ -58,7 +61,7 @@ export default function CompleteProfile() {
             // Check if profile is already completed
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('avatar, phone, is_company')
+                .select('name, avatar, phone, is_company')
                 .eq('id', user.id)
                 .single()
 
@@ -67,7 +70,23 @@ export default function CompleteProfile() {
                 return;
             }
 
-            if (profile.phone && profile.is_company !== null && profile.avatar) {
+            if (profile.name) {
+                form.setValue('name', profile.name);
+            }
+
+            if (profile.phone) {
+                form.setValue('phone', profile.phone);
+            }
+
+            if (profile.is_company !== null) {
+                form.setValue('isDealer', profile.is_company);
+            }
+
+            if (profile.avatar) {
+                form.setValue('avatar', profile.avatar);
+            }
+
+            if (profile.phone && profile.is_company !== null && profile.avatar && profile.name) {
                 router.replace('/');
                 return;
             }
@@ -76,7 +95,7 @@ export default function CompleteProfile() {
             setLoading(false);
         };
         checkUser();
-    }, [router]);
+    }, [router, form]);
 
     const handleAvatarChange = (files: FileList | null) => {
         if (files && files[0]) {
@@ -161,11 +180,31 @@ export default function CompleteProfile() {
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
                         <FormField
                             control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>
+                                        <h3 className="text-lg font-semibold">1. Numele tău</h3>
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Alex Popa"
+                                            className="w-full text-md py-5"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <FormField
+                            control={form.control}
                             name="phone"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <h3 className="text-lg font-semibold">1. Număr de telefon</h3>
+                                        <h3 className="text-lg font-semibold">2. Număr de telefon</h3>
                                     </FormLabel>
                                     <FormControl>
                                         <Input
@@ -188,7 +227,7 @@ export default function CompleteProfile() {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <h3 className="text-lg font-semibold">2. Ești dealer auto?</h3>
+                                        <h3 className="text-lg font-semibold">3. Ești dealer auto? <span className="text-xs text-gray-500">{field.value === true ? "- Sunt dealer auto" : "- Nu sunt dealer auto"}</span></h3>
                                     </FormLabel>
                                     <FormControl>
                                         <div className="flex items-center gap-2">
@@ -211,19 +250,16 @@ export default function CompleteProfile() {
                             render={({ field: { onChange, value, ...field } }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        <h3 className="text-lg font-semibold">3. Fotografie de profil</h3>
+                                        <h3 className="text-lg font-semibold">4. Fotografie de profil</h3>
                                     </FormLabel>
                                     <FormControl>
                                         <div className="flex items-center justify-left w-full">
                                             {avatarPreview ? (
                                                 <div className="relative">
-                                                    <Image
-                                                        src={avatarPreview}
-                                                        alt="Avatar preview"
-                                                        width={128}
-                                                        height={128}
-                                                        className="rounded-full object-cover"
-                                                    />
+                                                    <Avatar className="h-32 w-32">
+                                                        <AvatarImage src={avatarPreview} alt="Avatar preview" className="object-cover" />
+                                                        <AvatarFallback>Avatar</AvatarFallback>
+                                                    </Avatar>
                                                     <button
                                                         type="button"
                                                         onClick={removeAvatar}

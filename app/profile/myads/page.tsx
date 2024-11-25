@@ -11,8 +11,8 @@ import { Ad } from '@/types/schema';
 import Footer from '@/components/footer';
 import CardHorizontal from '@/components/cardHorizontal';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
-
+import { ChevronLeft, ChevronRight, CirclePlus, FileText } from 'lucide-react';
+import Link from 'next/link';
 const ITEMS_PER_PAGE = 10;
 
 function MyAdsContent() {
@@ -142,6 +142,12 @@ function MyAdsContent() {
                         <FileText className="w-16 h-16 mb-4" />
                         <p className="text-lg font-medium">Nu ai niciun anunț momentan</p>
                         <p className="text-sm mt-2">Anunțurile tale vor apărea aici</p>
+                        <Link href="/adauga">
+                            <Button variant="outline" className="mt-4 bg-[#E83B3B] text-white hover:bg-[#E83B3B]/80 hover:text-white">
+                                <CirclePlus className="mr-2 h-4 w-4" />
+                                Postează un anunț
+                            </Button>
+                        </Link>
                     </div>
                 ) : (
                     <>

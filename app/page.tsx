@@ -289,7 +289,8 @@ export default function Home() {
                     availableModels={availableModels}
                     onSubmit={handleSearch}
                 />
-                <div className="mt-16 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <h3 className="mt-16 text-2xl font-bold mb-4">Anunțuri recente</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {cards.map((card) => (
                         <Card
                             key={card.id}

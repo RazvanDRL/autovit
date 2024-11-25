@@ -4,7 +4,7 @@ import DropdownSelect from '@/components/dropdownSelect';
 import { carBrands } from '@/lib/carBrands';
 import { years } from '@/lib/years';
 import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Search } from 'lucide-react';
 
 const prices = [
     { value: "1000", label: "1000 EUR" },
@@ -67,7 +67,8 @@ export default function CarSearch({
     onSubmit
 }: CarSearchProps) {
     return (
-        <form onSubmit={onSubmit} className="w-full p-8 drop-shadow-xl bg-white rounded-sm border border-gray-100">
+        <form onSubmit={onSubmit} className="w-full p-8 drop-shadow-xl bg-white rounded-lg">
+            <h3 className="text-2xl font-bold mb-4">Căută anunțul dorit</h3>
             <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                 <div className="col-span-2">
                     <DropdownSelect
@@ -147,6 +148,7 @@ export default function CarSearch({
                     type="submit"
                     className="w-1/2 bg-[#C82814] font-semibold py-6 text-base"
                 >
+                    <Search className="w-4 h-4 mr-2" />
                     Caută anunțuri
                 </Button>
             </div>

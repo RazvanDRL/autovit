@@ -10,7 +10,7 @@ import Navbar from '@/components/navbar';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Footer from '@/components/footer';
-import { MessageSquare } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 
 interface Conversation {
     id: string;
@@ -178,7 +178,7 @@ export default function MessagesPage() {
                 <div className="space-y-2">
                     {conversations.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                            <MessageSquare className="w-12 h-12 mb-4" />
+                            <MessageCircle className="w-12 h-12 mb-4" />
                             <p className="text-lg font-medium">Nu ai niciun mesaj încă</p>
                             <p className="text-sm">Mesajele tale vor apărea aici</p>
                         </div>

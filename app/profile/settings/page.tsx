@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
 import {
     Form,
     FormControl,
@@ -44,12 +44,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Loader2 } from "lucide-react";
-import Image from "next/image";
 
 const formSchema = z.object({
     full_name: z.string().min(2, "Numele trebuie să aibă cel puțin 2 caractere"),
     phone: z.string().regex(/^(\+\d{1,3}[- ]?)?\d{10}$/, "Număr de telefon invalid"),
-    email_notifications: z.boolean(),
+    // email_notifications: z.boolean(),
     is_company: z.boolean(),
     company_name: z.string().optional(),
     avatar: z.any().optional(),
@@ -72,7 +71,7 @@ export default function Settings() {
         defaultValues: {
             full_name: "",
             phone: "",
-            email_notifications: false,
+            // email_notifications: false,
             is_company: false,
             company_name: "",
         },
@@ -97,7 +96,7 @@ export default function Settings() {
                 const values = {
                     full_name: profile.name || "",
                     phone: profile.phone || "",
-                    email_notifications: profile.email_notifications || false,
+                    // email_notifications: profile.email_notifications || false,
                     is_company: profile.is_company || false,
                     company_name: profile.company_name || "",
                 };
@@ -117,7 +116,7 @@ export default function Settings() {
         const subscription = form.watch((value) => {
             if (!initialValues) return;
 
-            const fieldsToCheck = ['full_name', 'phone', 'email_notifications', 'is_company', 'company_name'];
+            const fieldsToCheck = ['full_name', 'phone', 'is_company'];
 
             const hasChanges = fieldsToCheck.some(key => {
                 if (value[key as keyof typeof value] === undefined) return false;
@@ -164,7 +163,7 @@ export default function Settings() {
                     phone: values.phone,
                     // email_notifications: values.email_notifications,
                     is_company: values.is_company,
-                    // company_name: values.company_name,
+                    company_name: values.company_name,
                 })
                 .eq('id', user.id);
 
@@ -186,15 +185,15 @@ export default function Settings() {
         if (!file || !user) return;
 
         const fileType = file.type;
-        const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
         if (!validTypes.includes(fileType)) {
-            toast.error("Vă rugăm să încărcați o imagine în format JPG, PNG sau WEBP");
+            toast.error("Vă rugăm să încărcați o imagine în format JPG, JPEG, PNG sau WEBP");
             return;
         }
 
         const fileSize = file.size / 1024 / 1024;
         if (fileSize > 5) {
-            toast.error("Imaginea trebuie să fie mai mică de 5MB");
+            toast.error("Imaginea trebuie să fie mai mică de 5MB. A fost încărcată o imagine de " + fileSize.toFixed(2) + "MB");
             return;
         }
 
@@ -248,6 +247,7 @@ export default function Settings() {
     return (
         <>
             <Navbar />
+            <Toaster />
             <div className="container max-w-2xl mx-auto p-4 py-8">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold mt-12 flex items-center">
@@ -395,7 +395,7 @@ export default function Settings() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        {/* <Card>
                             <CardHeader>
                                 <CardTitle>Notificări</CardTitle>
                                 <CardDescription>
@@ -426,7 +426,7 @@ export default function Settings() {
                                     )}
                                 />
                             </CardContent>
-                        </Card>
+                        </Card> */}
 
                         <div className="flex justify-end space-x-4">
                             <Button

@@ -67,7 +67,7 @@ export default function CarSearch({
     onSubmit
 }: CarSearchProps) {
     return (
-        <form onSubmit={onSubmit} className="w-full p-8 drop-shadow-xl bg-white rounded-lg">
+        <form onSubmit={onSubmit} className="w-[70%] p-8 drop-shadow-xl bg-white rounded-lg">
             <h3 className="text-2xl font-bold mb-4">Căută anunțul dorit</h3>
             <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                 <div className="col-span-2">

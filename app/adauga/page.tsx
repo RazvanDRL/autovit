@@ -37,7 +37,6 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
 import { delay } from '@/lib/delay';
 import Navbar from '@/components/navbar';
@@ -48,7 +47,7 @@ import cities from '@/lib/cities.json';
 import { County, fetchCounties } from '@/lib/index';
 import { carBrands } from '@/lib/carBrands';
 import DropdownSelect from '@/components/dropdownSelect';
-import { body_types, BodyType, fuel_types, FuelType } from '@/types/schema';
+import { body_types, fuel_types } from '@/types/schema';
 import { equipment_types } from '@/types/schema';
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -446,7 +445,7 @@ export default function CarAdForm() {
                                             <FormControl>
                                                 <div className='flex items-center w-full sm:w-2/3'>
                                                     <DropdownSelect
-                                                        options={carBrands}
+                                                        options={carBrands.filter(brand => !['altele', 'oricare'].includes(brand.label.toLowerCase()))}
                                                         placeholder="Selecteaza o marca"
                                                         value={field.value}
                                                         onChange={async (value) => {

@@ -135,7 +135,7 @@ export const equipment_types = [
     { value: "auto_headlights", label: "Faruri cu temporizator", category: "Electronice și asistență șofer" },
     { value: "headlight_washers", label: "Spalare faruri", category: "Electronice și asistență șofer" },
     { value: "daytime_lights", label: "Lumini de zi", category: "Electronice și asistență șofer" },
-    { value: "led_daytime_lights", label: "Lumini de zi LED", category: "Electronice și asistență ��ofer" },
+    { value: "led_daytime_lights", label: "Lumini de zi LED", category: "Electronice și asistență șofer" },
     { value: "fog_lights", label: "Faruri ceata", category: "Electronice și asistență șofer" },
     { value: "led_fog_lights", label: "Faruri ceata LED", category: "Electronice și asistență șofer" },
     { value: "led_taillights", label: "Stopuri LED", category: "Electronice și asistență șofer" },
